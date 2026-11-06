@@ -54,22 +54,37 @@ def call_with_retry(
     max_delay: float = 30.0,
     sleep: Callable[[float], None] = time.sleep,
     network_errors: tuple[type[BaseException], ...] = (ConnectionError, TimeoutError),
+    on_retry: Callable[[str], None] | None = print,
+    safe_to_repeat: bool = True,
 ) -> Any:
     """Call `send()` until it succeeds or a rule says stop. Returns the response.
 
     `send` must return an object with `.status_code` and `.text` (e.g. requests.Response).
     `what` is a short label for error messages, e.g. "TTS unit 3".
+    `on_retry` is told about every retry (never silent). Pass None to mute in tests.
+    `safe_to_repeat=False` is for requests that create something paid (e.g. a batch
+    job): after a network error or 5xx the server MAY have done it already, so only
+    429 (definitely rejected) is retried; everything else raises.
     """
     attempt = 0
     used_500_retry = False
+
+    def wait(seconds: float, reason: str) -> None:
+        if on_retry:
+            on_retry(f"  [retry] {what}: {reason}; waiting {seconds:.0f} s (attempt {attempt}/{max_attempts})")
+        sleep(seconds)
+
     while True:
         attempt += 1
         try:
             resp = send()
         except network_errors as e:
+            if not safe_to_repeat:
+                raise RequestError(f"{what}: network error ({e}); not retried because the server "
+                                   f"may have already done it. Check before re-running.") from e
             if attempt >= max_attempts:
                 raise RequestError(f"{what}: network error after {attempt} attempts: {e}") from e
-            sleep(min(base_delay * 2 ** (attempt - 1), max_delay))
+            wait(min(base_delay * 2 ** (attempt - 1), max_delay), f"network error {type(e).__name__}")
             continue
 
         status = resp.status_code
@@ -79,11 +94,13 @@ def call_with_retry(
         body = _short(getattr(resp, "text", "") or "")
         if status in FATAL:
             raise FatalAPIError(f"{what}: HTTP {status} (key, credit or permission problem): {body}", status, body)
+        if not safe_to_repeat and status != 429:
+            raise RequestError(f"{what}: HTTP {status}, not retried (may have been created): {body}", status, body)
         if status in RETRY_ONCE and not used_500_retry and attempt < max_attempts:
             used_500_retry = True
-            sleep(base_delay)
+            wait(base_delay, f"HTTP {status} {body[:120]}")
             continue
         if status in RETRY_FOREVER_ISH and attempt < max_attempts:
-            sleep(min(base_delay * 2 ** (attempt - 1), max_delay))
+            wait(min(base_delay * 2 ** (attempt - 1), max_delay), f"HTTP {status} {body[:120]}")
             continue
         raise RequestError(f"{what}: HTTP {status} after {attempt} attempt(s): {body}", status, body)

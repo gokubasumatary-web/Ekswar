@@ -119,6 +119,28 @@ def test_gives_up_after_max_attempts():
     assert len(log) == 4
 
 
+def test_every_retry_is_reported():
+    messages = []
+    send, _ = fake_sender([429, 503, 200])
+    call_with_retry(send, what="TTS unit 3", sleep=no_sleep, on_retry=messages.append)
+    assert len(messages) == 2
+    assert "TTS unit 3" in messages[0] and "429" in messages[0]
+
+
+@pytest.mark.parametrize("first", [500, 503, ConnectionError("dropped")])
+def test_not_safe_to_repeat_never_retries_ambiguous_failures(first):
+    send, log = fake_sender([first, 200])
+    with pytest.raises(RequestError):
+        call_with_retry(send, what="create job", sleep=no_sleep, safe_to_repeat=False)
+    assert len(log) == 1  # did NOT send a second (possibly duplicate, paid) request
+
+
+def test_not_safe_to_repeat_still_retries_429():
+    send, log = fake_sender([429, 200])
+    call_with_retry(send, what="create job", sleep=no_sleep, safe_to_repeat=False, on_retry=None)
+    assert log == [429, 200]
+
+
 def test_network_error_is_retried():
     send, log = fake_sender([ConnectionError("dropped"), 200])
     assert call_with_retry(send, what="t", sleep=no_sleep).status_code == 200

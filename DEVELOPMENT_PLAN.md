@@ -6,6 +6,9 @@
 
 **Stage docs:** every stage gets its own detailed write-up in [docs/stages/](docs/stages/):
 - [Stage 0: Foundation](docs/stages/STAGE_00_foundation.md) ✅
+- [Stage 1: Voice test](docs/stages/STAGE_01_voice_test.md) ✅ GO: cloned voice for all 3 languages
+- [Stage 2: Audio prep](docs/stages/STAGE_02_audio_prep.md) ✅ synthetic + real video (team listening pending)
+- [Stage 3: Transcription](docs/stages/STAGE_03_transcription.md) ✅
 
 **Status legend:** ✅ done and tested · 🔄 in progress · ⏸ waiting on something · ⬜ not started
 
@@ -161,6 +164,13 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-07 | 3 | ✅ `transcribe_batch()` (create → start → poll 10 s → files → download; job id saved for resume). 1 real job on `chai_video.mp4`: **2 segments (14.5 s, 12.4 s)**, no punctuation, no word times, English transliterated. Found 3 silent retries → retries now logged; create job never re-sent except on 429. 30/30 tests. |
+| 2026-11-07 | 2 | Real video `samples/chai_video.mp4` (27.6 s, 480×864) separated OK; music ~12 dB below voice; audio 0.28 s shorter than video. |
+| 2026-11-06 | 2 | Built `src/separate.py` (extract → Demucs → 16 kHz STT file, `--no-music`, cached). Synthetic test (own voice + generated chords): voice SDR 0.4 → **17.1 dB**, music **16.7 dB**; Demucs 23.5 s for 21.6 s; cache 0.01 s. 21/21 tests. Waiting for a real 30 s Hindi video to listen. |
+| 2026-11-06 | 2 (prep) | GPU PyTorch (2.6 + CUDA 12.4, 2.5 GB) download **failed** (network drop). pip then installed **Demucs 4.1.0 + CPU PyTorch 2.15**. Demucs 4.1 no longer needs torchaudio. CPU check: 22 s clip separated in ~17 s (≈0.8× real time; 42 s total incl. first-time model download). **Team decision: CPU** (GPU optional later). |
+| 2026-11-06 | 1 | ✅ **GO.** Team listened: cloned voice "okay" for Tamil, Bengali, Marathi → use `vachana-vc-v1` for all three; Timbre stays as fallback. |
+| 2026-11-06 | 1 | Built `src/audio.py`, `src/gnani.py` (embedding + cloned TTS), `scripts/voice_test.py`. 18/18 offline tests. Real run: 4 Gnani calls → embedding [1,768] + Tamil/Bengali/Marathi clips (44.1 kHz mono WAV). Re-run: 0 calls (cache). **Waiting for the team to listen.** |
+| 2026-11-06 | 0 | Committed + pushed Stage 0 (`6c76d49`). |
 | 2026-11-06 | 1 (prep) | Gnani key added to `.env`; verified with free `GET /stt/v3/batch/jobs` → HTTP 200, empty job list. Still need: voice sample. |
 | 2026-11-06 | 0 | Created `.venv` (Python 3.13.7; 3.11 not installed, 3.14 too new for Demucs). Installed ffmpeg 9.0.2 via winget. Wrote config, cache, retry modules. 13/13 offline tests pass. Waiting for `.env` keys + voice sample to start Stage 1. |
 
