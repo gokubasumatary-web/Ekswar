@@ -9,6 +9,9 @@
 - [Stage 1: Voice test](docs/stages/STAGE_01_voice_test.md) ✅ GO: cloned voice for all 3 languages
 - [Stage 2: Audio prep](docs/stages/STAGE_02_audio_prep.md) ✅ synthetic + real video (team listening pending)
 - [Stage 3: Transcription](docs/stages/STAGE_03_transcription.md) ✅
+- [Stage 4: LLM layer](docs/stages/STAGE_04_llm.md) ✅
+- [Stage 5: Units](docs/stages/STAGE_05_units.md) ✅
+- [Stage 6: Translation](docs/stages/STAGE_06_translation.md) ✅
 
 **Status legend:** ✅ done and tested · 🔄 in progress · ⏸ waiting on something · ⬜ not started
 
@@ -164,6 +167,9 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-07 | 6 | ✅ `src/translate.py` (1 call/unit, full context, numbers as words, names list, char budget = slot × chars/s × 0.9; flags digits / script / over-budget). Live: 6 calls, all 3 languages within budget, 100% script, no digits. Re-run 0 calls. Misheard name spreads into every language → needs `--names`. 74/74 tests. |
+| 2026-11-07 | 5 | ✅ `src/units.py` (option A: segment = unit; merge < 1 s; slot/gap; Gemini punctuation in 1 call with a same-words check). Gemini 3.8 overloaded > 1 h → **3.6-flash + backup 3.5-flash** (team decision). Live: 2 units, words unchanged; re-run 0 calls. Fixed `\w` vs Hindi vowel signs bug. 58/58 tests. |
+| 2026-11-07 | 4 | ✅ `src/llm.py` (Gemini REST generateContent, JSON mode, thinking LOW, cached, retries logged, 404/403 stop the run). Model `gemini-3.8-flash` (2.5-flash closed to new users). Gemini overloaded at first (503 + 120 s hangs) → timeout 60 s. Live: नमस्ते दोस्तों → வணக்கம் நண்பர்களே; re-run 0 calls. 40/40 tests. |
 | 2026-11-07 | 3 | ✅ `transcribe_batch()` (create → start → poll 10 s → files → download; job id saved for resume). 1 real job on `chai_video.mp4`: **2 segments (14.5 s, 12.4 s)**, no punctuation, no word times, English transliterated. Found 3 silent retries → retries now logged; create job never re-sent except on 429. 30/30 tests. |
 | 2026-11-07 | 2 | Real video `samples/chai_video.mp4` (27.6 s, 480×864) separated OK; music ~12 dB below voice; audio 0.28 s shorter than video. |
 | 2026-11-06 | 2 | Built `src/separate.py` (extract → Demucs → 16 kHz STT file, `--no-music`, cached). Synthetic test (own voice + generated chords): voice SDR 0.4 → **17.1 dB**, music **16.7 dB**; Demucs 23.5 s for 21.6 s; cache 0.01 s. 21/21 tests. Waiting for a real 30 s Hindi video to listen. |

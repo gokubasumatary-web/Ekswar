@@ -67,6 +67,8 @@ def check_environment() -> list[tuple[str, bool, str]]:
             rows.append((key, True, detail))
         except ConfigError:
             rows.append((key, False, "missing"))
+    fallback = os.environ.get("GEMINI_FALLBACK_MODEL", "").strip()
+    rows.append(("GEMINI_FALLBACK", True, fallback or "(none, optional)"))
     return rows
 
 

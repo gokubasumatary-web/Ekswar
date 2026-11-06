@@ -767,7 +767,10 @@ Supporting deliverables: README (how to run, models, contributions, honest limit
 | Python env | ✅ Done | `.venv` with Python 3.13.7 |
 | ffmpeg installed | ✅ Done | 9.0.2 via winget (visible in new terminals) |
 | Gnani API key in `.env` | ✅ Valid | 2026-11-06: `GET /stt/v3/batch/jobs` → HTTP 200 (free, read-only). TTS / voice-clone scope confirmed at the first Stage 1 call. **Key was pasted in chat → regenerate it before submission.** |
-| Gemini API key + model in `.env` | ⏸ Missing | `GEMINI_MODEL` to be chosen in AI Studio |
+| Gemini API key + model in `.env` | ✅ Valid | `GEMINI_MODEL=gemini-3.6-flash`, `GEMINI_FALLBACK_MODEL=gemini-3.5-flash` (3.8 was overloaded). **Key was pasted in chat → regenerate before submission.** |
+| **Stage 6: Translation** | ✅ Done | Tamil/Bengali/Marathi via Gemini, char budget per slot; not yet native-checked. See docs/stages/STAGE_06_translation.md |
+| **Stage 5: Units** | ✅ Done | Option A (segment = unit) + Gemini punctuation with a same-words check. See docs/stages/STAGE_05_units.md |
+| **Stage 4: LLM layer** | ✅ Done | `src/llm.py`, plain REST, cached. See docs/stages/STAGE_04_llm.md |
 | PyTorch / Demucs | ✅ Installed | Demucs 4.1.0 + PyTorch 2.15 **CPU** (team decision). ~0.8× real time. |
 | **Stage 2: Audio prep** | ✅ Synthetic | `src/separate.py`; SDR voice 17.1 dB / music 16.7 dB on a synthetic mix. Real-video listening pending. |
 | 30 s Hindi test clip | ✅ Done | `samples/chai_video.mp4` (27.6 s, own voice, soft music; git-ignored) |

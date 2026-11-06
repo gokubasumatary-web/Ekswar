@@ -40,6 +40,10 @@ Format: **date · area · source of expectation**, then *Expected* / *Actual* / 
 **2026-11-06 · HTTP 500 can mean "text too long" · docs**
 - *Action:* retry a 500 only once, then fail the unit (don't burn time or credits).
 
+**2026-11-07 · Gemini docs moved**
+- `ai.google.dev/...` docs now redirect to `aistudio.google.com/docs/...`. Docs push the new **Interactions API**, but `POST /v1beta/models/{model}:generateContent` is still listed as current (no deprecation). We use generateContent.
+- For Gemini 3.6+ models `temperature/topP/topK` are ignored (future 400), so we don't send them. Gemini 3 uses `thinkingConfig.thinkingLevel`.
+
 ---
 
 ## Differences found from real API calls
@@ -68,3 +72,14 @@ Format: **date · area · source of expectation**, then *Expected* / *Actual* / 
 - **No punctuation**, as expected. **English words come out transliterated in Devanagari** ("हे गाइस माय नेम इस…"). The source was code-mixed Hinglish.
 - **Names can be misheard:** the speaker's name came out as "कुताल सुमठारी". `bias_list` might help (v2.5, single words, letters only).
 - **API call count:** the client counted 7 HTTP calls for create + start + 1 status + files (expected 4) → **3 silent retries** happened (status unknown; they weren't logged then). Job list confirmed **only one job was created**. *Action:* `retry.py` now prints every retry; `create job` uses `safe_to_repeat=False` (only retried on 429) so a dropped connection can never create a duplicate paid job.
+
+**2026-11-07 · Gemini key + models**
+- Key format starts with `AQ.` (not the familiar `AIza…`), and it works: `GET /v1beta/models` → 200.
+- **`gemini-2.5-flash` → 404 "no longer available to new users… use gemini-3.8-flash".** Chosen: **`GEMINI_MODEL=gemini-3.8-flash`** (newest stable Flash text model in our model list).
+- **Overload behaviour:** `gemini-3.8-flash` and `gemini-3.7-flash` both returned **503 "high demand"** several times; on one run all 6 attempts **hung until the 120 s read timeout** (no 503 at all). A few minutes later the same request answered at once.
+  - *Action:* LLM timeout lowered to 60 s; retries (up to 6, backoff to 60 s) are logged; failure raises a clear `RequestError` for that unit.
+- **First successful call:** Hindi "नमस्ते दोस्तों" → Tamil `{"ta": "வணக்கம் நண்பர்களே"}` (JSON mode). Re-run: 0 calls (cache).
+
+**2026-11-07 · Gemini overload lasted over an hour · model probe**
+- 30 s-limit probe of one tiny request each: `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-flash-latest` → **timeout**; `gemini-3.6-flash` 200 in 3.8 s; `gemini-3.5-flash` 200 in 3.5 s; `gemini-3.5-flash-lite` / `gemini-flash-lite-latest` 200 in ~2 s. All gave the correct Tamil.
+- *Action (team decision):* `GEMINI_MODEL=gemini-3.6-flash`, new optional `GEMINI_FALLBACK_MODEL=gemini-3.5-flash`. Main model gets 3 tries / 45 s; on busy/unreachable, the backup is asked (logged `[fallback]`).
