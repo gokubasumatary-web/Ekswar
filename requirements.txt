@@ -1,0 +1,9 @@
+# Python 3.13 (see DEVELOPMENT_PLAN.md, Stage 0)
+# Only what the finished stages need. Later stages add their own packages here.
+
+requests==2.34.2        # HTTP calls to the Gnani API
+python-dotenv==1.2.4    # loads API keys from .env
+rapidfuzz==3.14.6       # text similarity for the QA check
+pytest==9.2.0           # offline tests
+
+# System tool (not pip): ffmpeg + ffprobe must be on PATH

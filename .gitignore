@@ -1,0 +1,23 @@
+# Secrets: never commit
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Generated data (API results, intermediate audio, final videos)
+cache/
+outputs/
+samples/
+*.wav
+*.mp3
+*.mp4
+*.m4a
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
