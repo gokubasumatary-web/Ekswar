@@ -768,10 +768,12 @@ Supporting deliverables: README (how to run, models, contributions, honest limit
 | ffmpeg installed | ✅ Done | 9.0.2 via winget (visible in new terminals) |
 | Gnani API key in `.env` | ✅ Valid | 2026-11-06: `GET /stt/v3/batch/jobs` → HTTP 200 (free, read-only). TTS / voice-clone scope confirmed at the first Stage 1 call. **Key was pasted in chat → regenerate it before submission.** |
 | Gemini API key + model in `.env` | ⏸ Missing | `GEMINI_MODEL` to be chosen in AI Studio |
-| PyTorch / Demucs | ⬜ Stage 2 | RTX 2050 GPU available |
-| 30 s Hindi test clip | ⬜ Unknown | Needed from Stage 2 |
-| 5–30 s voice reference sample | ⬜ Unknown | Needed for Stage 1 |
-| **Stage 1: Voice test (Tamil / Bengali / Marathi)** | ⏸ Blocked | Needs the Gnani key + voice sample. Go/no-go gate. |
+| PyTorch / Demucs | ✅ Installed | Demucs 4.1.0 + PyTorch 2.15 **CPU** (team decision). ~0.8× real time. |
+| **Stage 2: Audio prep** | ✅ Synthetic | `src/separate.py`; SDR voice 17.1 dB / music 16.7 dB on a synthetic mix. Real-video listening pending. |
+| 30 s Hindi test clip | ✅ Done | `samples/chai_video.mp4` (27.6 s, own voice, soft music; git-ignored) |
+| **Stage 3: Transcription** | ✅ Done | Prisma v2.5 batch works; 2 long segments, no word times → Stage 5 design choice. See docs/stages/STAGE_03_transcription.md |
+| 5–30 s voice reference sample | ✅ Done | `samples/ref_voice_raw.mpeg` (22.4 s, very clean; git-ignored) |
+| **Stage 1: Voice test (Tamil / Bengali / Marathi)** | ✅ GO | Cloned voice judged "okay" by the team for all 3 (not yet native-speaker checked). See docs/stages/STAGE_01_voice_test.md |
 
 ---
 
@@ -802,4 +804,5 @@ Supporting deliverables: README (how to run, models, contributions, honest limit
 | 2026-11-06 | Python **3.13** venv (`.venv`) | 3.11 not installed; 3.14 too new for Demucs deps |
 | 2026-11-06 | Dropped the day-wise plan; follow dependency-ordered stages | Team decision, see DEVELOPMENT_PLAN.md |
 | 2026-11-06 | 500 → retry once; 401/402/403 → stop the run; 429/503/504 → backoff | Implemented in `src/retry.py` |
-| *pending* | Cloned voice vs Timbre per language | After the Nov 6 listening test |
+| 2026-11-06 | **Cloned voice (`vachana-vc-v1`) for Tamil, Bengali and Marathi**; Timbre v3.0 = fallback only | Team listening test: all three "okay" |
+| 2026-11-06 | Marathi included in the voice test | Done, passed |
