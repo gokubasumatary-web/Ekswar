@@ -44,9 +44,11 @@ class Translation:
     script_ratio: float
     error: str | None = None
 
+    mixed_script: str = ""   # letters from another Indian script found in the text
+
     @property
     def script_ok(self) -> bool:
-        return self.script_ratio >= SCRIPT_OK_RATIO
+        return self.script_ratio >= SCRIPT_OK_RATIO and not self.mixed_script
 
     def to_dict(self) -> dict:
         return asdict(self) | {"script_ok": self.script_ok}
@@ -67,6 +69,17 @@ def script_ratio(text: str, lang: str) -> float:
     if not letters:
         return 0.0
     return sum(lo <= ord(ch) <= hi for ch in letters) / len(letters)
+
+
+INDIC_RANGE = (0x0900, 0x0DFF)  # Devanagari ... Sinhala: all Indian script blocks
+
+
+def foreign_indic_chars(text: str, lang: str) -> str:
+    """Letters from ANOTHER Indian script (e.g. Devanagari inside Bengali). Even one confuses TTS."""
+    lo, hi = LANGUAGES[lang][2], LANGUAGES[lang][3]
+    return "".join(ch for ch in text
+                   if INDIC_RANGE[0] <= ord(ch) <= INDIC_RANGE[1] and not lo <= ord(ch) <= hi
+                   and unicodedata.category(ch)[0] in "LM")
 
 
 def has_digits(text: str) -> bool:
@@ -103,6 +116,15 @@ Rules:
 Return JSON: {{"translation": "..."}}"""
 
 
+MIXED_SCRIPT_FIX = """
+
+Your previous answer was:
+\"\"\"
+{previous}
+\"\"\"
+It contains letters from the wrong script: "{bad}". Write EVERY word, including names, using only {script} letters (spell names by their sound)."""
+
+
 def build_prompt(unit: Unit, all_units: list[Unit], lang: str, names: list[str]) -> str:
     name, script = LANGUAGES[lang][0], LANGUAGES[lang][1]
     names_rule = f"\n- Names in this video (spell them correctly): {', '.join(names)}" if names else ""
@@ -116,7 +138,8 @@ def check(unit: Unit, lang: str, text: str) -> Translation:
     budget = char_budget(unit.slot, lang)
     return Translation(id=unit.id, lang=lang, source=unit.text, text=text, chars=len(text),
                        budget_chars=budget, over_budget=len(text) > budget,
-                       digits_found=has_digits(text), script_ratio=round(script_ratio(text, lang), 3))
+                       digits_found=has_digits(text), script_ratio=round(script_ratio(text, lang), 3),
+                       mixed_script=foreign_indic_chars(text, lang))
 
 
 SHORTEN_PROMPT = """This {lang_name} line is a dub of a Hindi video, but it takes too long to say.
@@ -156,17 +179,26 @@ def shorten_line(llm, lang: str, source: str, current: str, target: int,
 # --------------------------------------------------------------------------
 
 def translate_units(units: list[Unit], lang: str, llm, *, names: list[str] | None = None,
-                    warn=print) -> list[Translation]:
-    """Translate every unit. A failed unit is marked with `error` and the rest continue."""
+                    context_units: list[Unit] | None = None, warn=print) -> list[Translation]:
+    """Translate every unit in `units`. A failed unit is marked with `error` and the rest continue.
+
+    context_units: the whole transcript for context (default: `units` itself). Lets you
+    re-translate a few units while Gemini still sees the full video.
+    """
+    context = context_units or units
     if lang not in LANGUAGES:
         raise ValueError(f"unsupported language {lang!r}; use one of {list(LANGUAGES)}")
     names = names or []
     out: list[Translation] = []
     for u in units:
         try:
-            ans = llm.ask_json(build_prompt(u, units, lang, names), TRANSLATE_SCHEMA,
-                               what=f"translate unit {u.id} -> {lang}")
+            prompt = build_prompt(u, context, lang, names)
+            ans = llm.ask_json(prompt, TRANSLATE_SCHEMA, what=f"translate unit {u.id} -> {lang}")
             t = check(u, lang, ans["translation"])
+            if t.mixed_script:  # one targeted re-ask: tell Gemini exactly which letters are wrong
+                fix = MIXED_SCRIPT_FIX.format(bad=t.mixed_script, previous=t.text, script=LANGUAGES[lang][1])
+                ans = llm.ask_json(prompt + fix, TRANSLATE_SCHEMA, what=f"translate unit {u.id} -> {lang} (script fix)")
+                t = check(u, lang, ans["translation"])
         except Exception as e:  # one bad unit must not kill the run
             warn(f"WARNING: unit {u.id} ({lang}) translation failed: {e}")
             t = Translation(u.id, lang, u.text, "", 0, char_budget(u.slot, lang), False, False, 0.0,
@@ -174,7 +206,9 @@ def translate_units(units: list[Unit], lang: str, llm, *, names: list[str] | Non
         else:
             if t.digits_found:
                 warn(f"WARNING: unit {u.id} ({lang}) contains digits: {t.text[:60]}")
-            if not t.script_ok:
+            if t.mixed_script:
+                warn(f"WARNING: unit {u.id} ({lang}) has letters from another script: {t.mixed_script!r}")
+            elif not t.script_ok:
                 warn(f"WARNING: unit {u.id} ({lang}) only {t.script_ratio:.0%} in {LANGUAGES[lang][1]} script")
         out.append(t)
     return out

@@ -85,6 +85,10 @@ Format: **date · area · source of expectation**, then *Expected* / *Actual* / 
 - *Actual:* HTTP 200, keys `success, request_id, transcript, model ("prisma-v2.5"), processing_time, end_to_end_latency`. **Matches the docs.** No `output.literal` field (docs mention it for v2.5). Very fast: ~0.12 s processing.
 - Transcripts have no punctuation; spelling variants vs Gemini's text (e.g. Tamil "பாக்கலாம்" vs "பார்க்கலாம்").
 
+**2026-11-07 · Gemini copies Devanagari letters into Bengali names**
+- Translating unit 0 to Bengali with the name hint "गुथल बसुमतारी", Gemini wrote **"গুथल"**: Hindi letters "थल" inside a Bengali word, twice (also with the English spelling added to the hint). The 80 % script-ratio check passed it (98–99 %).
+- *Action:* new `mixed_script` check (any letter from another Indian script block = not OK) + **one targeted re-ask** naming the wrong letters. Result: "গুথাল বাসুমাতারি" (pure Bengali) on the first re-ask.
+
 **2026-11-07 · Gemini overload lasted over an hour · model probe**
 - 30 s-limit probe of one tiny request each: `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-flash-latest` → **timeout**; `gemini-3.6-flash` 200 in 3.8 s; `gemini-3.5-flash` 200 in 3.5 s; `gemini-3.5-flash-lite` / `gemini-flash-lite-latest` 200 in ~2 s. All gave the correct Tamil.
 - *Action (team decision):* `GEMINI_MODEL=gemini-3.6-flash`, new optional `GEMINI_FALLBACK_MODEL=gemini-3.5-flash`. Main model gets 3 tries / 45 s; on busy/unreachable, the backup is asked (logged `[fallback]`).

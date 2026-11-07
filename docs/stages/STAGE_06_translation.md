@@ -96,7 +96,25 @@ Full output: `outputs/translations/chai_video.<lang>.json`.
 - **Quality not verified by native speakers.** The Marathi reads naturally; Tamil and Bengali look fluent but need a native check before we claim anything.
 - Even with the budget, the translations are similar in length to the Hindi. Whether they *fit in time* is only known after speaking them, which is Stage 7's job.
 
-## 8. How this connects
+## 8. Update: name fix + mixed-script protection (2026-11-07)
+
+The speaker confirmed the name: **गुथल बसुमतारी (Guthal Basumatary)**. Unit 0 was re-translated with `--units 0 --names "गुथल बसुमतारी (Guthal Basumatary)"` (Gemini still sees the whole transcript via `context_units`).
+
+**Bug found:** Bengali came back as "গু**थल** বাসুমতারী", with Hindi letters copied into a Bengali word. The script-ratio check (98–99 %) didn't flag it. Even one wrong-script letter can confuse TTS.
+
+**Fix (general, not just for names):**
+- `foreign_indic_chars()` → `mixed_script` field; any letter from another Indian script makes `script_ok` false.
+- On mixed script, **one targeted re-ask** tells Gemini exactly which letters were wrong.
+
+| Language | Name now | QA after re-synthesis |
+|---|---|---|
+| Tamil | குதால் பசுமதாரி (Tamil has no separate g/b/th letters; normal spelling) | 96.3 % |
+| Bengali | গুথাল বাসুমাতারি | 97.7 % |
+| Marathi | गुथल बसुमतारी | 96.4 % |
+
+Tests: 115/115 (incl. the real "গুथल" case, the re-ask, and re-translation with full context).
+
+## 9. How this connects
 
 - Stage 7 speaks each translation with the cloned voice, measures it, and shortens it if needed.
 - Stage 9 uses the translations for the subtitles.

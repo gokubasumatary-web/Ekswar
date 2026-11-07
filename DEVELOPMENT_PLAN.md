@@ -169,6 +169,7 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-07 | 6 (fix) | Name confirmed: **गुथल बसुमतारी (Guthal Basumatary)**. Unit 0 re-translated (`--units`, full context kept). Gemini put Hindi "थल" inside a Bengali word → new `mixed_script` check + one targeted re-ask → fixed. Unit 0 re-synthesized (3 Gnani) + QA: 96.3 / 97.7 / 96.4 %, all fit. 115/115 tests. |
 | 2026-11-07 | 8 | ✅ `src/qa.py` + `transcribe_rest()` (POST /stt/v3, cached, ≤30 s, failures = "not checked"). Real: 6 REST calls, similarity 93.7–98.3 % (all ok); wrong-line control 36.7–47.5 % → threshold set to 80 %. 111/111 tests. |
 | 2026-11-07 | 7 | ✅ Real run, cloned voice, 3 languages × 2 units: **all 6 fit** (6 Gnani calls). Stress test (squeezed slots): ×0.55 → sped_up 1.06 (0 calls); ×0.45 → rewritten 145→95 chars, 7.21→4.87 s (1 Gemini + 1 Gnani). Observation: dubs often much shorter than slots (up to ~6 s silence), decide after Stage 9. |
 | 2026-11-07 | 7 | 🔄 `src/timing.py` ladder (fit / sped_up / rewritten / flagged; decisions pure, actions plugged in), `change_tempo` + `pad_to` (ffmpeg; atempo error ≤ 9 ms, pad never cuts), `shorten_line` (Gemini). 21 timing + 5 audio tests; 102/102 total. Real cloned-voice run waiting for the name spelling + go-ahead. |
