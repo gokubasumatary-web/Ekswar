@@ -173,6 +173,7 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-08 | 7 (fuller) | Team: lips still mismatched. In scope: fuller lines via Gemini when a dub fills < 75 % of the slot (same meaning, no new facts, kept only if it fits) + slow-down floor 0.85×. Demo coverage 69–78 % → **89–92 %**, QA 95–98 %, 0 failed. Page shows "Fuller" + coverage. 173/173 tests. |
 | 2026-11-08 | 12 | 🔄 README (with Mermaid architecture diagram, real results, honest limits), docs/SUBMISSION.md, docs/DEMO_SCRIPT.md, docs/LINKEDIN_POST.md, final checklist. Contributions left as placeholders for the team. |
 | 2026-11-07 | 11 (design) | Professional redesign (original, Wispr-Flow-like minimal feel): hero with animated dub-preview card + cycling greeting, full width, keyed cards, tabs, pills; load + **scroll-driven** animations (progress bar, reveals, pinned word-by-word story, sliding greeting rows). 6 CSS bugs found via Playwright screenshots and fixed. 164/164 tests. |
 | 2026-11-07 | 11 | ✅ `app.py` (Streamlit 1.67): uploads, languages, names, no-music, **required consent**, progress bar, side-by-side videos, metrics, line table, MP4/SRT downloads, AI-dubbed label. Calls the same `pipeline.run()`. Lip-sync stays out of scope (team chose option A). 164/164 tests; results view verified with real demo data; server health 200. |

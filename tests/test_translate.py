@@ -134,6 +134,23 @@ def test_shorten_line_prompt_and_cleanup():
     assert "AT MOST 40 characters" in spy.prompt and "हिंदी मूल" in spy.prompt and "गोकुल" in spy.prompt
 
 
+@pytest.mark.parametrize("answer,expected", [
+    ("வாங்க, இப்போ நாம ஆரம்பிக்கலாம்.", "வாங்க, இப்போ நாம ஆரம்பிக்கலாம்."),
+    ("வாங்க 2 பேர்", ""),          # digits: unsafe for TTS -> keep original
+    ("வாங்க नमस्ते", ""),           # wrong script -> keep original
+])
+def test_expand_line_rejects_unsafe_answers(answer, expected):
+    from src.translate import expand_line
+
+    class Spy:
+        def ask_json(self, prompt, schema=None, what="", validate=None):
+            self.prompt = prompt
+            return {"translation": answer}
+    spy = Spy()
+    assert expand_line(spy, "ta-IN", "हिंदी", "வாங்க", 30) == expected
+    assert "Do NOT add new facts" in spy.prompt and "about 30 characters" in spy.prompt
+
+
 def test_unknown_language_rejected():
     with pytest.raises(ValueError):
         translate_units(UNITS, "fr-FR", FakeLLM([]))

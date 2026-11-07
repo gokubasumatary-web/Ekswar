@@ -174,6 +174,47 @@ def shorten_line(llm, lang: str, source: str, current: str, target: int,
     return " ".join(ans["translation"].split()).strip().strip('"').strip()
 
 
+EXPAND_PROMPT = """This {lang_name} line is a dub of a Hindi video, but it is spoken much faster than the original,
+so the speaker's mouth keeps moving after the dub ends.
+
+Hindi original (for meaning):
+\"\"\"
+{source}
+\"\"\"
+
+Current {lang_name} line ({chars} characters):
+\"\"\"
+{current}
+\"\"\"
+
+Rewrite it in natural spoken {lang_name} with about {target} characters.
+Rules:
+- Same meaning. Do NOT add new facts, names, numbers or claims.
+- Make it fuller only by phrasing it more naturally or completely, the way people really talk
+  (short connecting words, slightly fuller phrasing). It must still sound natural, not padded.
+- Write in {script} script only. Numbers as {lang_name} words, no digits. Keep names.{names_rule}
+- Output only the spoken line.
+
+Return JSON: {{"translation": "..."}}"""
+
+
+def expand_line(llm, lang: str, source: str, current: str, target: int,
+                names: list[str] | None = None) -> str:
+    """Ask Gemini for a fuller, natural version of a line that is much shorter than the original
+    (used by the Timing Agent). Same meaning, no new facts. Wrong-script answers are rejected."""
+    name, script = LANGUAGES[lang][0], LANGUAGES[lang][1]
+    names_rule = f" Names: {', '.join(names)}." if names else ""
+    prompt = EXPAND_PROMPT.format(lang_name=name, script=script, source=source, current=current,
+                                  chars=len(current), target=target, names_rule=names_rule)
+    valid = lambda a: isinstance(a, dict) and not foreign_indic_chars(str(a.get("translation", "")), lang)
+    ans = llm.ask_json(prompt, TRANSLATE_SCHEMA, what=f"expand -> {lang} ({len(current)}->{target} ch)",
+                       validate=valid)
+    text = " ".join(ans["translation"].split()).strip().strip('"').strip()
+    if foreign_indic_chars(text, lang) or has_digits(text):
+        return ""  # unsafe for TTS: the agent keeps the original line
+    return text
+
+
 # --------------------------------------------------------------------------
 # Gemini step
 # --------------------------------------------------------------------------
