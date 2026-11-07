@@ -14,6 +14,7 @@
 - [Stage 6: Translation](docs/stages/STAGE_06_translation.md) ✅
 - [Stage 7: Timing agent](docs/stages/STAGE_07_timing_agent.md) ✅
 - [Stage 8: Quality check](docs/stages/STAGE_08_quality_check.md) ✅
+- [Stage 9: Mix + video + subtitles](docs/stages/STAGE_09_mix_video.md) ✅ (team watching)
 
 **Status legend:** ✅ done and tested · 🔄 in progress · ⏸ waiting on something · ⬜ not started
 
@@ -169,6 +170,7 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-07 | 9 | ✅ `src/mix.py`: numpy clip placement, music mix, loudnorm −16 LUFS, `-c:v copy` mux with AI-dubbed label + language tag, sentence-level SRT. **First dubbed videos** in ta/bn/mr (27.63 s, video stream identical). Bugs fixed: MP4 needs 3-letter language codes; `with_suffix` made all languages overwrite one file. 128/128 tests. No API calls. |
 | 2026-11-07 | 6 (fix) | Name confirmed: **गुथल बसुमतारी (Guthal Basumatary)**. Unit 0 re-translated (`--units`, full context kept). Gemini put Hindi "थल" inside a Bengali word → new `mixed_script` check + one targeted re-ask → fixed. Unit 0 re-synthesized (3 Gnani) + QA: 96.3 / 97.7 / 96.4 %, all fit. 115/115 tests. |
 | 2026-11-07 | 8 | ✅ `src/qa.py` + `transcribe_rest()` (POST /stt/v3, cached, ≤30 s, failures = "not checked"). Real: 6 REST calls, similarity 93.7–98.3 % (all ok); wrong-line control 36.7–47.5 % → threshold set to 80 %. 111/111 tests. |
 | 2026-11-07 | 7 | ✅ Real run, cloned voice, 3 languages × 2 units: **all 6 fit** (6 Gnani calls). Stress test (squeezed slots): ×0.55 → sped_up 1.06 (0 calls); ×0.45 → rewritten 145→95 chars, 7.21→4.87 s (1 Gemini + 1 Gnani). Observation: dubs often much shorter than slots (up to ~6 s silence), decide after Stage 9. |
