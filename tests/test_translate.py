@@ -30,6 +30,29 @@ def test_script_ratio(text, lang, expected):
     assert script_ratio(text, lang) == expected
 
 
+def test_hindi_letters_inside_bengali_are_caught():
+    t = check(UNITS[0], "bn-IN", "আমার নাম গুथल বাসুমতারী")  # real bug seen from Gemini
+    assert t.mixed_script == "थल"
+    assert not t.script_ok  # flagged even though 95%+ of letters are Bengali
+
+
+def test_mixed_script_triggers_one_targeted_reask():
+    class Spy(FakeLLM):
+        prompts = []
+
+        def ask_json(self, prompt, schema=None, what=""):
+            self.prompts.append(prompt)
+            return super().ask_json(prompt, schema, what)
+    spy = Spy(["আমার নাম গুथल", "আমার নাম গুথল"])
+    out = translate_units(UNITS[:1], "bn-IN", spy, warn=lambda m: None)
+    assert out[0].text == "আমার নাম গুথল" and out[0].script_ok
+    assert len(spy.prompts) == 2 and '"थल"' in spy.prompts[1]
+
+
+def test_english_words_are_not_mixed_script():
+    assert check(UNITS[0], "ta-IN", "என் video").mixed_script == ""
+
+
 def test_mixed_script_ratio_is_partial():
     r = script_ratio("வணக்கம் video", "ta-IN")
     assert 0.3 < r < 0.9
@@ -83,10 +106,21 @@ def test_one_failed_unit_does_not_stop_the_rest():
     assert "failed" in warnings[0]
 
 
-def test_wrong_script_is_warned():
+def test_retranslating_one_unit_still_sees_whole_transcript():
+    class Spy(FakeLLM):
+        def ask_json(self, prompt, schema=None, what=""):
+            self.prompt = prompt
+            return super().ask_json(prompt, schema, what)
+    spy = Spy(["வணக்கம்"])
+    translate_units(UNITS[1:], "ta-IN", spy, context_units=UNITS)
+    assert "नमस्ते दोस्तों" in spy.prompt  # unit 0's text is in the context
+
+
+def test_wrong_script_is_warned_if_reask_also_fails():
     warnings = []
-    translate_units(UNITS[:1], "ta-IN", FakeLLM(["नमस्ते"]), warn=warnings.append)
-    assert any("script" in w for w in warnings)
+    out = translate_units(UNITS[:1], "ta-IN", FakeLLM(["नमस्ते", "नमस्ते"]), warn=warnings.append)
+    assert any("another script" in w for w in warnings)
+    assert not out[0].script_ok  # stays flagged for later stages
 
 
 def test_shorten_line_prompt_and_cleanup():

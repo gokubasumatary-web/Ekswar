@@ -22,9 +22,12 @@ def main() -> None:
     p.add_argument("units_json")
     p.add_argument("--names", default="", help="comma-separated names to keep, e.g. 'गोकुल'")
     p.add_argument("--langs", default="ta-IN,bn-IN,mr-IN")
+    p.add_argument("--units", default="", help="only re-translate these unit ids (others kept from the saved file)")
     a = p.parse_args()
 
-    units = [Unit(**d) for d in json.loads(Path(a.units_json).read_text(encoding="utf-8"))]
+    all_units = [Unit(**d) for d in json.loads(Path(a.units_json).read_text(encoding="utf-8"))]
+    only = {int(x) for x in a.units.split(",") if x.strip()}
+    units = [u for u in all_units if not only or u.id in only]
     names = [n.strip() for n in a.names.split(",") if n.strip()]
     llm = LLM()
     stem = Path(a.units_json).stem
@@ -32,9 +35,12 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     for lang in a.langs.split(","):
-        results = translate_units(units, lang, llm, names=names)
-        (out_dir / f"{stem}.{lang}.json").write_text(
-            json.dumps([r.to_dict() for r in results], ensure_ascii=False, indent=2), encoding="utf-8")
+        results = translate_units(units, lang, llm, names=names, context_units=all_units)
+        path = out_dir / f"{stem}.{lang}.json"
+        merged = {d["id"]: d for d in json.loads(path.read_text(encoding="utf-8"))} if (only and path.exists()) else {}
+        merged.update({r.id: r.to_dict() for r in results})
+        path.write_text(json.dumps([merged[k] for k in sorted(merged)], ensure_ascii=False, indent=2),
+                        encoding="utf-8")
         print(f"\n=== {LANGUAGES[lang][0]} ({lang}) ===")
         for u, r in zip(units, results):
             flags = [f for f, on in (("OVER", r.over_budget), ("DIGITS", r.digits_found),
