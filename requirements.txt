@@ -11,4 +11,7 @@ demucs==4.1.0           # newer than 4.0.1; no longer needs torchaudio
 torch==2.15.0           # CPU build from PyPI (GPU build optional, see docs)
 soundfile==0.14.0       # read WAV files as numbers (tests + quality measurement)
 
+# Stage 11: web page
+streamlit==1.67.0       # app.py  (run: streamlit run app.py)
+
 # System tool (not pip): ffmpeg + ffprobe must be on PATH

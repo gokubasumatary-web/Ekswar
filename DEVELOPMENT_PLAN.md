@@ -15,7 +15,8 @@
 - [Stage 7: Timing agent](docs/stages/STAGE_07_timing_agent.md) ✅
 - [Stage 8: Quality check](docs/stages/STAGE_08_quality_check.md) ✅
 - [Stage 9: Mix + video + subtitles](docs/stages/STAGE_09_mix_video.md) ✅
-- [Stage 10: Pipeline + CLI + report](docs/stages/STAGE_10_pipeline_cli.md) ✅ (2–3 min video pending)
+- [Stage 10: Pipeline + CLI + report](docs/stages/STAGE_10_pipeline_cli.md) ✅
+- [Stage 11: Streamlit page](docs/stages/STAGE_11_streamlit.md) ✅ (team to try in browser)
 
 **Status legend:** ✅ done and tested · 🔄 in progress · ⏸ waiting on something · ⬜ not started
 
@@ -171,6 +172,8 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-07 | 11 (design) | Professional redesign (original, Wispr-Flow-like minimal feel): hero with animated dub-preview card + cycling greeting, full width, keyed cards, tabs, pills; load + **scroll-driven** animations (progress bar, reveals, pinned word-by-word story, sliding greeting rows). 6 CSS bugs found via Playwright screenshots and fixed. 164/164 tests. |
+| 2026-11-07 | 11 | ✅ `app.py` (Streamlit 1.67): uploads, languages, names, no-music, **required consent**, progress bar, side-by-side videos, metrics, line table, MP4/SRT downloads, AI-dubbed label. Calls the same `pipeline.run()`. Lip-sync stays out of scope (team chose option A). 164/164 tests; results view verified with real demo data; server health 200. |
 | 2026-11-07 | 10 (demo) | 2-min demo (117 s, Diwali greeting). Team: "doesn't match the video". Lip-sync stays out of scope; fixed **timing sync**: split long segments at pauses (`src/segment.py`, Gnani REST per chunk) + slow short lines ≤0.9× (`fill_tempo`). Gemini free quota ran out → backup chain incl. flash-lite; per-minute vs per-day quotas (verified quotaId); answers failing the script check never cached. Final: 3 × 21 lines, 0 failed, 0 flagged, QA 96.3 / 93.4 / 96.9 %. 160/160 tests. |
 | 2026-11-07 | 10 | ✅ `src/pipeline.py` + `cli.py` + `report.json`. One command dubs into ta/bn/mr; shared steps run once; inputs checked before any credit. Real: 6/6 fit, QA 96.6 / 95.1 / 97.7 %, cached re-run 24 s. Gnani REST gave intermittent 504 HTML pages → "not checked" + retry on re-run; QA now speech-only 16 kHz. 134/134 tests. |
 | 2026-11-07 | 9 | ✅ `src/mix.py`: numpy clip placement, music mix, loudnorm −16 LUFS, `-c:v copy` mux with AI-dubbed label + language tag, sentence-level SRT. **First dubbed videos** in ta/bn/mr (27.63 s, video stream identical). Bugs fixed: MP4 needs 3-letter language codes; `with_suffix` made all languages overwrite one file. 128/128 tests. No API calls. |
