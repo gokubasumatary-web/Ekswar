@@ -29,6 +29,13 @@ HARD_SPEEDUP = 1.25
 MAX_REWRITES = 3
 SHORTEN_MARGIN = 0.95  # aim slightly under the budget when asking for a shorter line
 
+# Fill short lines (added 2026-11-07 after watching the 2-min demo): the cloned voice
+# often finished in ~60-70% of the original speaking time, leaving silence while the
+# speaker's mouth still moves. If a fitting clip is shorter than FILL_IF x slot, slow it
+# down toward the slot, but never below MIN_SLOWDOWN (still sounds natural).
+FILL_IF = 0.9
+MIN_SLOWDOWN = 0.9
+
 
 # --------------------------------------------------------------------------
 # Pure decisions
@@ -56,6 +63,13 @@ def decide(duration: float, budget: float, rewrites_done: int) -> Decision:
     if ratio <= HARD_SPEEDUP:
         return Decision("speed", round(ratio, 4))
     return Decision("flag")
+
+
+def fill_tempo(duration: float, slot: float) -> float:
+    """Tempo (< 1 = slower) to stretch a too-short clip toward the original speaking time."""
+    if slot <= 0 or duration >= slot * FILL_IF:
+        return 1.0
+    return round(max(duration / slot, MIN_SLOWDOWN), 4)
 
 
 def target_chars(current_chars: int, duration: float, budget: float) -> int:
@@ -127,7 +141,8 @@ def fit_unit(
         d = decide(cur.duration, budget, rewrites if can_rewrite else MAX_REWRITES)
         if d.action == "fit":
             status = "rewritten" if rewrites else "fit"
-            return _finish(unit_id, status, cur, clips[-1], budget, 1.0, rewrites, attempts, pad, measure, note)
+            return _finish(unit_id, status, cur, clips[-1], budget, fill_tempo(cur.duration, slot), rewrites,
+                           attempts, pad, measure, note, speed_up)
         if d.action == "speed" and rewrites == 0:
             return _finish(unit_id, "sped_up", cur, clips[-1], budget, d.tempo, 0, attempts, pad, measure,
                            note, speed_up)
@@ -170,7 +185,7 @@ def fit_unit(
 
 def _finish(unit_id, status, att: Attempt, clip: bytes, budget: float, tempo: float, rewrites: int,
             attempts, pad, measure, note, speed_up=None) -> TimingResult:
-    if tempo > 1.0:
+    if tempo != 1.0:  # > 1 = faster (too long), < 1 = slower (filling a short line)
         clip = speed_up(clip, tempo)
     final = round(measure(clip), 3)
     padded = pad(clip, budget) if final < budget else clip

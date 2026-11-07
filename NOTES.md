@@ -85,6 +85,19 @@ Format: **date · area · source of expectation**, then *Expected* / *Actual* / 
 - *Actual:* HTTP 200, keys `success, request_id, transcript, model ("prisma-v2.5"), processing_time, end_to_end_latency`. **Matches the docs.** No `output.literal` field (docs mention it for v2.5). Very fast: ~0.12 s processing.
 - Transcripts have no punctuation; spelling variants vs Gemini's text (e.g. Tamil "பாக்கலாம்" vs "பார்க்கலாம்").
 
+**2026-11-07 · Gemini free-tier quotas: same message for per-minute AND per-day (verified)**
+- 2-min demo × 3 languages + retries used up the free daily quota of `gemini-3.6-flash` and `gemini-3.5-flash`. 429 body: "You exceeded your current quota…".
+- **The same message is used for per-minute limits.** We first treated every quota 429 as daily and skipped models for the whole run → lines failed although `gemini-3.5-flash-lite` worked again a minute later.
+- **Verified real details:** `error.details[].violations[].quotaId` = `GenerateRequestsPerDayPerProjectPerModel-FreeTier` or `GenerateRequestsPerMinutePerProjectPerModel-FreeTier`; a `retryDelay` (e.g. "52s") was used as the pause.
+- *Actions:* quota 429 → no same-model retries, switch model; **PerDay** → skip the model for the run; otherwise **pause** it (retryDelay, default 60 s); all paused → wait for the first one. Backup chain `gemini-3.5-flash,gemini-3.5-flash-lite`.
+- **Lite model sometimes wrote a whole Bengali line in Devanagari**, and the bad answer was cached. *Action:* `ask_json(validate=...)`: answers failing the script check are never cached and the next model is tried; old cached invalid answers are ignored.
+
+**2026-11-07 · Gnani REST STT: intermittent HTTP 504 (HTML gateway page)**
+- During the first full CLI runs, `POST /stt/v3` often returned **504 with an HTML page** (a gateway/proxy page, not the JSON error envelope in the docs). Sometimes 5 tries in a row failed; minutes later the same clip passed.
+- We first suspected our ~4.8 s padding silence (a speech-only upload of the failing clip answered in 0.8 s), but **later runs got 504s on speech-only clips in all languages**. Conclusion: intermittent server-side errors, not caused by the clip.
+- *Actions:* QA now sends **speech only, 16 kHz mono** (smaller, judges the speech not the padding); HTML bodies are summarised in logs instead of dumped; a clip that keeps failing is marked **"not checked"** (never "passed"); re-running retries only the missing checks (everything else cached). All 6 clips eventually checked.
+- *Open:* whether 504'd attempts consume credits is unknown (no credits API).
+
 **2026-11-07 · Gemini copies Devanagari letters into Bengali names**
 - Translating unit 0 to Bengali with the name hint "गुथल बसुमतारी", Gemini wrote **"গুथल"**: Hindi letters "थल" inside a Bengali word, twice (also with the English spelling added to the hint). The 80 % script-ratio check passed it (98–99 %).
 - *Action:* new `mixed_script` check (any letter from another Indian script block = not OK) + **one targeted re-ask** naming the wrong letters. Result: "গুথাল বাসুমাতারি" (pure Bengali) on the first re-ask.

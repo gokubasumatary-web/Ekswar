@@ -78,10 +78,30 @@ class FakeWorld:
 
 def test_fit_pads_to_budget():
     w = FakeWorld()
-    r = w.run("x" * 80, slot=10.0)                 # 8.0 s in a 10 s budget
+    r = w.run("x" * 95, slot=10.0)                 # 9.5 s in a 10 s budget (>= 90%: no slow-down)
     assert r.status == "fit" and r.tempo == 1.0 and r.rewrites == 0
     assert w.measure(r.audio) == 10.0               # padded with silence to the budget
     assert w.shorten_calls == [] and w.tempos == []
+
+
+def test_short_line_is_slowed_a_little_to_fill_the_slot():
+    w = FakeWorld()
+    r = w.run("x" * 60, slot=10.0)                 # 6 s in a 10 s slot -> slow, but max 0.9x
+    assert r.status == "fit" and r.tempo == 0.9
+    assert r.final_duration == pytest.approx(6.0 / 0.9, abs=0.001)   # durations are rounded to ms
+    r2 = FakeWorld().run("x" * 85, slot=10.0)      # 8.5 s: would need 0.85x, floor is 0.9x
+    assert r2.tempo == 0.9 and r2.final_duration == pytest.approx(8.5 / 0.9, abs=0.001)
+
+
+@pytest.mark.parametrize("duration,slot,expected", [
+    (9.0, 10.0, 1.0),      # 90% of slot: leave it
+    (8.95, 10.0, 0.9),     # just under: slow (floor 0.9)
+    (9.5, 10.0, 1.0),
+    (3.0, 0.0, 1.0),       # no slot info: leave it
+])
+def test_fill_tempo(duration, slot, expected):
+    from src.timing import fill_tempo
+    assert fill_tempo(duration, slot) == expected
 
 
 def test_gap_gives_extra_room():

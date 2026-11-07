@@ -17,7 +17,9 @@ from dataclasses import asdict, dataclass
 
 from rapidfuzz import fuzz
 
-MIN_UNIT_SECONDS = 1.0       # shorter segments get merged into a neighbour
+# Shorter segments get merged into a neighbour. Raised 1.0 -> 2.0 s (2026-11-07): the
+# 2-min demo had 1.7 s fragments like "दिवाली में," that translate badly on their own.
+MIN_UNIT_SECONDS = 2.0
 WORDS_SAME_THRESHOLD = 95.0  # % similarity required between raw and punctuated words
 
 

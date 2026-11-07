@@ -42,6 +42,9 @@ class FatalAPIError(APIError):
 
 
 def _short(text: str, limit: int = 500) -> str:
+    """Shorten an error body for logs. Gateways sometimes return a whole HTML page (e.g. a 504)."""
+    if text.lstrip().lower().startswith(("<!doctype html", "<html")):
+        return "(HTML error page from a gateway/proxy, not a JSON API error)"
     return text if len(text) <= limit else text[:limit] + "..."
 
 
@@ -56,6 +59,7 @@ def call_with_retry(
     network_errors: tuple[type[BaseException], ...] = (ConnectionError, TimeoutError),
     on_retry: Callable[[str], None] | None = print,
     safe_to_repeat: bool = True,
+    give_up_if: Callable[[Any], bool] | None = None,
 ) -> Any:
     """Call `send()` until it succeeds or a rule says stop. Returns the response.
 
@@ -65,6 +69,8 @@ def call_with_retry(
     `safe_to_repeat=False` is for requests that create something paid (e.g. a batch
     job): after a network error or 5xx the server MAY have done it already, so only
     429 (definitely rejected) is retried; everything else raises.
+    `give_up_if(resp)` -> True means "retrying cannot help" (e.g. a DAILY quota is used up):
+    raise immediately instead of waiting and retrying.
     """
     attempt = 0
     used_500_retry = False
@@ -94,6 +100,8 @@ def call_with_retry(
         body = _short(getattr(resp, "text", "") or "")
         if status in FATAL:
             raise FatalAPIError(f"{what}: HTTP {status} (key, credit or permission problem): {body}", status, body)
+        if give_up_if is not None and give_up_if(resp):
+            raise RequestError(f"{what}: HTTP {status}, not retried (retrying cannot help): {body}", status, body)
         if not safe_to_repeat and status != 429:
             raise RequestError(f"{what}: HTTP {status}, not retried (may have been created): {body}", status, body)
         if status in RETRY_ONCE and not used_500_retry and attempt < max_attempts:

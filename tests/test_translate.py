@@ -40,9 +40,9 @@ def test_mixed_script_triggers_one_targeted_reask():
     class Spy(FakeLLM):
         prompts = []
 
-        def ask_json(self, prompt, schema=None, what=""):
+        def ask_json(self, prompt, schema=None, what="", validate=None):
             self.prompts.append(prompt)
-            return super().ask_json(prompt, schema, what)
+            return super().ask_json(prompt, schema, what, validate)
     spy = Spy(["আমার নাম গুथल", "আমার নাম গুথল"])
     out = translate_units(UNITS[:1], "bn-IN", spy, warn=lambda m: None)
     assert out[0].text == "আমার নাম গুথল" and out[0].script_ok
@@ -90,7 +90,7 @@ class FakeLLM:
     def __init__(self, answers):
         self.answers = list(answers)
 
-    def ask_json(self, prompt, schema=None, what=""):
+    def ask_json(self, prompt, schema=None, what="", validate=None):
         a = self.answers.pop(0)
         if isinstance(a, Exception):
             raise a
@@ -108,9 +108,9 @@ def test_one_failed_unit_does_not_stop_the_rest():
 
 def test_retranslating_one_unit_still_sees_whole_transcript():
     class Spy(FakeLLM):
-        def ask_json(self, prompt, schema=None, what=""):
+        def ask_json(self, prompt, schema=None, what="", validate=None):
             self.prompt = prompt
-            return super().ask_json(prompt, schema, what)
+            return super().ask_json(prompt, schema, what, validate)
     spy = Spy(["வணக்கம்"])
     translate_units(UNITS[1:], "ta-IN", spy, context_units=UNITS)
     assert "नमस्ते दोस्तों" in spy.prompt  # unit 0's text is in the context
@@ -125,7 +125,7 @@ def test_wrong_script_is_warned_if_reask_also_fails():
 
 def test_shorten_line_prompt_and_cleanup():
     class Spy:
-        def ask_json(self, prompt, schema=None, what=""):
+        def ask_json(self, prompt, schema=None, what="", validate=None):
             self.prompt = prompt
             return {"translation": '  "சுருக்கம்"  '}
     spy = Spy()

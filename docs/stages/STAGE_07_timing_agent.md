@@ -124,6 +124,10 @@ Tamil unit 0 speaks for 8.7 s in a 14.65 s budget, so **~6 s of silence** follow
 - or ask translation for a fuller line when it's much shorter than the slot.
 Decide after watching the first full dubbed video (Stage 9).
 
+## 7b. Update: filling short lines (2026-11-07, team decision after watching)
+
+New rule `fill_tempo(duration, slot)`: if a fitting clip is shorter than **90 %** of the original speaking time, slow it toward the slot, but **never below 0.9×**. Status stays `fit`; `report.json` counts it as `slowed`. On the 2-min demo, 18–19 of 21 lines per language were slowed, and the voice filled 69–78 % of the speaking time instead of ~65 %.
+
 ## 8. How this connects
 
 - Stage 8 transcribes each final clip to check it says what we intended.

@@ -193,11 +193,14 @@ def translate_units(units: list[Unit], lang: str, llm, *, names: list[str] | Non
     for u in units:
         try:
             prompt = build_prompt(u, context, lang, names)
-            ans = llm.ask_json(prompt, TRANSLATE_SCHEMA, what=f"translate unit {u.id} -> {lang}")
+            # wrong-script answers are not cached and the next model is tried (see LLM.ask_json)
+            valid = lambda a: isinstance(a, dict) and not foreign_indic_chars(str(a.get("translation", "")), lang)
+            ans = llm.ask_json(prompt, TRANSLATE_SCHEMA, what=f"translate unit {u.id} -> {lang}", validate=valid)
             t = check(u, lang, ans["translation"])
             if t.mixed_script:  # one targeted re-ask: tell Gemini exactly which letters are wrong
                 fix = MIXED_SCRIPT_FIX.format(bad=t.mixed_script, previous=t.text, script=LANGUAGES[lang][1])
-                ans = llm.ask_json(prompt + fix, TRANSLATE_SCHEMA, what=f"translate unit {u.id} -> {lang} (script fix)")
+                ans = llm.ask_json(prompt + fix, TRANSLATE_SCHEMA, what=f"translate unit {u.id} -> {lang} (script fix)",
+                                   validate=valid)
                 t = check(u, lang, ans["translation"])
         except Exception as e:  # one bad unit must not kill the run
             warn(f"WARNING: unit {u.id} ({lang}) translation failed: {e}")
