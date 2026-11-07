@@ -12,6 +12,8 @@
 - [Stage 4: LLM layer](docs/stages/STAGE_04_llm.md) ✅
 - [Stage 5: Units](docs/stages/STAGE_05_units.md) ✅
 - [Stage 6: Translation](docs/stages/STAGE_06_translation.md) ✅
+- [Stage 7: Timing agent](docs/stages/STAGE_07_timing_agent.md) ✅
+- [Stage 8: Quality check](docs/stages/STAGE_08_quality_check.md) ✅
 
 **Status legend:** ✅ done and tested · 🔄 in progress · ⏸ waiting on something · ⬜ not started
 
@@ -167,6 +169,9 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-07 | 8 | ✅ `src/qa.py` + `transcribe_rest()` (POST /stt/v3, cached, ≤30 s, failures = "not checked"). Real: 6 REST calls, similarity 93.7–98.3 % (all ok); wrong-line control 36.7–47.5 % → threshold set to 80 %. 111/111 tests. |
+| 2026-11-07 | 7 | ✅ Real run, cloned voice, 3 languages × 2 units: **all 6 fit** (6 Gnani calls). Stress test (squeezed slots): ×0.55 → sped_up 1.06 (0 calls); ×0.45 → rewritten 145→95 chars, 7.21→4.87 s (1 Gemini + 1 Gnani). Observation: dubs often much shorter than slots (up to ~6 s silence), decide after Stage 9. |
+| 2026-11-07 | 7 | 🔄 `src/timing.py` ladder (fit / sped_up / rewritten / flagged; decisions pure, actions plugged in), `change_tempo` + `pad_to` (ffmpeg; atempo error ≤ 9 ms, pad never cuts), `shorten_line` (Gemini). 21 timing + 5 audio tests; 102/102 total. Real cloned-voice run waiting for the name spelling + go-ahead. |
 | 2026-11-07 | 6 | ✅ `src/translate.py` (1 call/unit, full context, numbers as words, names list, char budget = slot × chars/s × 0.9; flags digits / script / over-budget). Live: 6 calls, all 3 languages within budget, 100% script, no digits. Re-run 0 calls. Misheard name spreads into every language → needs `--names`. 74/74 tests. |
 | 2026-11-07 | 5 | ✅ `src/units.py` (option A: segment = unit; merge < 1 s; slot/gap; Gemini punctuation in 1 call with a same-words check). Gemini 3.8 overloaded > 1 h → **3.6-flash + backup 3.5-flash** (team decision). Live: 2 units, words unchanged; re-run 0 calls. Fixed `\w` vs Hindi vowel signs bug. 58/58 tests. |
 | 2026-11-07 | 4 | ✅ `src/llm.py` (Gemini REST generateContent, JSON mode, thinking LOW, cached, retries logged, 404/403 stop the run). Model `gemini-3.8-flash` (2.5-flash closed to new users). Gemini overloaded at first (503 + 120 s hangs) → timeout 60 s. Live: नमस्ते दोस्तों → வணக்கம் நண்பர்களே; re-run 0 calls. 40/40 tests. |
