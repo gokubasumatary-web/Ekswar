@@ -39,4 +39,6 @@ github.com/gokubasumatary-web/Ekswar
 
 ---
 
+**Tag Gnani (required for the bonus award):** while writing the post, type `@` and start typing **Gnani** → pick Gnani's official LinkedIn company page from the list so it becomes a real tag (blue). Also tag your teammate.
+
 **Before posting:** both hashtags **#GnaniAI** and **#GreatIndianAIInternshipChallenge** must be there (competition rule); the post must be **public**; the video must contain only your own voice/face and copyright-free music.

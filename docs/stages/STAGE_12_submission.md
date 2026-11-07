@@ -23,6 +23,15 @@ All numbers come from the real 2-minute run (`outputs/runs/ekswar_demo/report.js
 - **Team contributions left as placeholders.** Only the team can state them truthfully.
 - AI assistance disclosed: "Development was assisted by Claude Code."
 
+## 2b. The official Gnani submission form (seen 2026-11-08)
+
+| Field | Our answer |
+|---|---|
+| 1–4 Name, registered email, teammate's email, institution | Team fills in |
+| **5 Project URL** (GitHub/Drive/Live) *with a ≤ 1-page solution pitch* | `https://github.com/gokubasumatary-web/Ekswar` → **[PITCH.md](../../PITCH.md)** (322 words), linked at the top of the README. **`main` must contain the work** (merge `feature` → `main` first). No deployment needed. |
+| **6 Demo video** (2–3 min) | Link to the uploaded video (YouTube unlisted, or Drive with "anyone with the link can view") |
+| **7 LinkedIn post tagging Gnani** (bonus) | Post from `docs/LINKEDIN_POST.md`, with Gnani's company page tagged |
+
 ## 3. ✅ Final checklist (team)
 
 - [ ] **Fill in contributions** in `README.md` §Team and `docs/SUBMISSION.md` §8 (true, specific)
@@ -31,5 +40,6 @@ All numbers come from the real 2-minute run (`outputs/runs/ekswar_demo/report.js
 - [ ] **Record the demo** (`docs/DEMO_SCRIPT.md`); upload (YouTube unlisted / Drive with view access)
 - [ ] **Post on LinkedIn/X** (public, #GnaniAI #GreatIndianAIInternshipChallenge); put the links in `docs/SUBMISSION.md` §9
 - [ ] Check Gnani credit balance once more (optional: report credits used)
-- [ ] **Merge `feature` → `main`** and push (only when the team says so)
-- [ ] **Submit:** demo video + written explanation (SUBMISSION.md) + Gnani models used + contributions + post link
+- [ ] **Merge `feature` → `main`** and push (only when the team says so). **Must happen before submitting**: judges see `main`.
+- [ ] Open `https://github.com/gokubasumatary-web/Ekswar` in a private window: README + PITCH.md visible?
+- [ ] **Submit the form:** fields 1–4, GitHub URL (5), demo video link (6), LinkedIn post link (7)
