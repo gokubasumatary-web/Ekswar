@@ -35,6 +35,28 @@ def duration_of_bytes(data: bytes, suffix: str = ".wav") -> float:
         return duration(p)
 
 
+def _filter_bytes(data: bytes, audio_filter: str) -> bytes:
+    """Run one ffmpeg audio filter on in-memory WAV and return WAV bytes (same rate/channels)."""
+    with tempfile.TemporaryDirectory() as d:
+        src, dst = Path(d) / "in.wav", Path(d) / "out.wav"
+        src.write_bytes(data)
+        _run([find_tool("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error", "-i", str(src),
+              "-af", audio_filter, "-c:a", "pcm_s16le", str(dst)])
+        return dst.read_bytes()
+
+
+def change_tempo(data: bytes, tempo: float) -> bytes:
+    """Speed speech up (tempo > 1) without changing pitch (ffmpeg atempo)."""
+    if not 0.5 <= tempo <= 2.0:
+        raise AudioError(f"tempo {tempo} outside the safe 0.5-2.0 range")
+    return _filter_bytes(data, f"atempo={tempo:.4f}")
+
+
+def pad_to(data: bytes, seconds: float) -> bytes:
+    """Add silence at the end so the clip lasts at least `seconds`. Never cuts audio."""
+    return _filter_bytes(data, f"apad=whole_dur={seconds:.3f}")
+
+
 def to_wav(src: str | Path, dst: str | Path, *, sample_rate: int, channels: int = 1,
            trim_leading_silence: bool = False) -> Path:
     """Convert any audio/video file to 16-bit PCM WAV.

@@ -3,7 +3,7 @@
 import pytest
 
 from src.translate import (build_prompt, char_budget, check, has_digits, script_ratio,
-                           translate_units)
+                           shorten_line, translate_units)
 from src.units import Unit
 
 
@@ -87,6 +87,17 @@ def test_wrong_script_is_warned():
     warnings = []
     translate_units(UNITS[:1], "ta-IN", FakeLLM(["नमस्ते"]), warn=warnings.append)
     assert any("script" in w for w in warnings)
+
+
+def test_shorten_line_prompt_and_cleanup():
+    class Spy:
+        def ask_json(self, prompt, schema=None, what=""):
+            self.prompt = prompt
+            return {"translation": '  "சுருக்கம்"  '}
+    spy = Spy()
+    out = shorten_line(spy, "ta-IN", "हिंदी मूल", "நீண்ட வரி", 40, names=["गोकुल"])
+    assert out == "சுருக்கம்"
+    assert "AT MOST 40 characters" in spy.prompt and "हिंदी मूल" in spy.prompt and "गोकुल" in spy.prompt
 
 
 def test_unknown_language_rejected():

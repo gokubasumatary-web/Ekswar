@@ -119,6 +119,11 @@ class GnaniClient:
 
         return self.cache.bytes_or_compute("tts", key, "wav", compute)
 
+    # -- Prisma REST speech-to-text (QA of dubbed clips) -----------------------
+    def transcribe_rest(self, data: bytes, language_code: str, what: str = "REST STT") -> dict:
+        """POST /stt/v3 (multipart audio_file + language_code; model omitted = Prisma v2.5)."""
+        return transcribe_rest_with(self, data, language_code, what)
+
     # -- Prisma batch speech-to-text ------------------------------------------
     def transcribe_batch(self, wav: str | Path, language_code: str = "hi-IN", *,
                          max_wait_seconds: float = 900,
@@ -185,6 +190,23 @@ class GnaniClient:
         transcript = dl.json()
         self.cache.put_json("stt_batch", key, transcript)
         return transcript
+
+
+def _rest_stt_key(data: bytes, language_code: str) -> str:
+    return make_key("stt-rest-v1", data, language_code)
+
+
+def transcribe_rest_with(client: "GnaniClient", data: bytes, language_code: str,
+                         what: str = "REST STT") -> dict:
+    """Prisma v2.5 REST STT on in-memory WAV (<= 30 s, docs). Returns the JSON body. Cached."""
+    def compute():
+        files = {"audio_file": ("clip.wav", data, "audio/wav")}
+        resp = client._send("POST", "/stt/v3", what, files=files, data={"language_code": language_code})
+        body = resp.json()
+        if "transcript" not in body:
+            raise RequestError(f"{what}: no 'transcript' in response (keys: {sorted(body)})")
+        return body
+    return client.cache.json_or_compute("stt_rest", _rest_stt_key(data, language_code), compute)
 
 
 def _mime_for(path: Path) -> str:

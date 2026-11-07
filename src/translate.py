@@ -119,6 +119,38 @@ def check(unit: Unit, lang: str, text: str) -> Translation:
                        digits_found=has_digits(text), script_ratio=round(script_ratio(text, lang), 3))
 
 
+SHORTEN_PROMPT = """This {lang_name} line is a dub of a Hindi video, but it takes too long to say.
+
+Hindi original (for meaning):
+\"\"\"
+{source}
+\"\"\"
+
+Current {lang_name} line ({chars} characters):
+\"\"\"
+{current}
+\"\"\"
+
+Rewrite it in natural spoken {lang_name} with AT MOST {target} characters.
+Rules:
+- Keep the core meaning; drop filler words and repetition first.
+- Write in {script} script only. Numbers as {lang_name} words, no digits. Keep names.{names_rule}
+- Output only the spoken line.
+
+Return JSON: {{"translation": "..."}}"""
+
+
+def shorten_line(llm, lang: str, source: str, current: str, target: int,
+                 names: list[str] | None = None) -> str:
+    """Ask Gemini for a shorter version of a translated line (used by the Timing Agent)."""
+    name, script = LANGUAGES[lang][0], LANGUAGES[lang][1]
+    names_rule = f" Names: {', '.join(names)}." if names else ""
+    prompt = SHORTEN_PROMPT.format(lang_name=name, script=script, source=source, current=current,
+                                   chars=len(current), target=target, names_rule=names_rule)
+    ans = llm.ask_json(prompt, TRANSLATE_SCHEMA, what=f"shorten -> {lang} ({len(current)}->{target} ch)")
+    return " ".join(ans["translation"].split()).strip().strip('"').strip()
+
+
 # --------------------------------------------------------------------------
 # Gemini step
 # --------------------------------------------------------------------------
