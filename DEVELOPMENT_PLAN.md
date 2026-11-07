@@ -16,7 +16,8 @@
 - [Stage 8: Quality check](docs/stages/STAGE_08_quality_check.md) ✅
 - [Stage 9: Mix + video + subtitles](docs/stages/STAGE_09_mix_video.md) ✅
 - [Stage 10: Pipeline + CLI + report](docs/stages/STAGE_10_pipeline_cli.md) ✅
-- [Stage 11: Streamlit page](docs/stages/STAGE_11_streamlit.md) ✅ (team to try in browser)
+- [Stage 11: Streamlit page](docs/stages/STAGE_11_streamlit.md) ✅
+- [Stage 12: Submission](docs/stages/STAGE_12_submission.md) 🔄 docs written · ⏸ team checklist
 
 **Status legend:** ✅ done and tested · 🔄 in progress · ⏸ waiting on something · ⬜ not started
 
@@ -172,6 +173,7 @@ README (models, contributions, how to run, honest limits), architecture diagram,
 
 | Date | Stage | What happened |
 |---|---|---|
+| 2026-11-08 | 12 | 🔄 README (with Mermaid architecture diagram, real results, honest limits), docs/SUBMISSION.md, docs/DEMO_SCRIPT.md, docs/LINKEDIN_POST.md, final checklist. Contributions left as placeholders for the team. |
 | 2026-11-07 | 11 (design) | Professional redesign (original, Wispr-Flow-like minimal feel): hero with animated dub-preview card + cycling greeting, full width, keyed cards, tabs, pills; load + **scroll-driven** animations (progress bar, reveals, pinned word-by-word story, sliding greeting rows). 6 CSS bugs found via Playwright screenshots and fixed. 164/164 tests. |
 | 2026-11-07 | 11 | ✅ `app.py` (Streamlit 1.67): uploads, languages, names, no-music, **required consent**, progress bar, side-by-side videos, metrics, line table, MP4/SRT downloads, AI-dubbed label. Calls the same `pipeline.run()`. Lip-sync stays out of scope (team chose option A). 164/164 tests; results view verified with real demo data; server health 200. |
 | 2026-11-07 | 10 (demo) | 2-min demo (117 s, Diwali greeting). Team: "doesn't match the video". Lip-sync stays out of scope; fixed **timing sync**: split long segments at pauses (`src/segment.py`, Gnani REST per chunk) + slow short lines ≤0.9× (`fill_tempo`). Gemini free quota ran out → backup chain incl. flash-lite; per-minute vs per-day quotas (verified quotaId); answers failing the script check never cached. Final: 3 × 21 lines, 0 failed, 0 flagged, QA 96.3 / 93.4 / 96.9 %. 160/160 tests. |

@@ -1,5 +1,8 @@
 # Secrets: never commit
 .env
+# exported chats (they can contain API keys)
+*pastedcontent*.txt
+*-export*.txt
 
 # Python
 .venv/
