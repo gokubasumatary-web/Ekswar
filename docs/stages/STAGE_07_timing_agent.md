@@ -128,6 +128,21 @@ Decide after watching the first full dubbed video (Stage 9).
 
 New rule `fill_tempo(duration, slot)`: if a fitting clip is shorter than **90 %** of the original speaking time, slow it toward the slot, but **never below 0.9×**. Status stays `fit`; `report.json` counts it as `slowed`. On the 2-min demo, 18–19 of 21 lines per language were slowed, and the voice filled 69–78 % of the speaking time instead of ~65 %.
 
+## 7c. Update: fuller lines + 0.85× (2026-11-08, team: "lip sync little bit not nice")
+
+True lip-sync stays out of scope; this improves **how much of the speaker's talking time the voice covers**.
+- `MIN_SLOWDOWN` 0.9 → **0.85**.
+- **Expand step:** if a fitting clip fills < **75 %** of the slot, ask Gemini **once** (`translate.expand_line`) for a fuller, natural line: same meaning, no new facts, about 92 % of the slot (≤ 1.5× chars). Rejected if it has digits or wrong-script letters; kept only if it still fits the budget; never loops. Then `fill_tempo` as before.
+- `report.json`: `expanded`, `speech_coverage`; page shows "Fuller" and "Your dubbed voice fills X %".
+
+| 2-min demo | Coverage before → after | Fuller | QA before → after |
+|---|---|---|---|
+| Tamil | 78 % → **90 %** | 10 | 96.3 → 97.7 % |
+| Bengali | 69 % → **89 %** | 15 | 93.4 → 95.1 % |
+| Marathi | 72 % → **92 %** | 14 | 96.9 → 98.3 % |
+
+0 failed, 0 flagged, no wrong-script letters, no digits. Run: 105 Gnani + 49 Gemini calls (Gemini main models hit the daily quota; lite backup used). Tests: 173/173.
+
 ## 8. How this connects
 
 - Stage 8 transcribes each final clip to check it says what we intended.

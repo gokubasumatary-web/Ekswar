@@ -47,7 +47,9 @@ def line_table(rows: list[dict]) -> list[dict]:
     for r in rows:
         tempo = r.get("tempo") or 1.0
         status = STATUS_LABEL.get(r["status"], r["status"])
-        if r["status"] == "fit" and tempo < 1.0:
+        if r.get("expanded"):
+            status = f"{status} · fuller line" + (f" · slowed {tempo:.2f}×" if tempo < 1.0 else "")
+        elif r["status"] == "fit" and tempo < 1.0:
             status = f"Fit · slowed {tempo:.2f}×"
         elif tempo > 1.0:
             status = f"{status} · {tempo:.2f}×"
@@ -101,11 +103,13 @@ def show_results(res) -> None:
 
             st.markdown('<div class="ek-label" style="margin-top:1.4rem">What the timing agent did</div>',
                         unsafe_allow_html=True)
-            m = st.columns(6)
-            for col, (label, key) in zip(m, [("Lines", "total_units"), ("Fit", "fit"), ("Slowed", "slowed"),
-                                             ("Sped up", "sped_up"), ("Rewritten", "rewritten"),
-                                             ("Failed", "failed")]):
-                col.metric(label, rep[key])
+            m = st.columns(7)
+            for col, (label, key) in zip(m, [("Lines", "total_units"), ("Fit", "fit"), ("Fuller", "expanded"),
+                                             ("Slowed", "slowed"), ("Sped up", "sped_up"),
+                                             ("Rewritten", "rewritten"), ("Failed", "failed")]):
+                col.metric(label, rep.get(key, 0))
+            if rep.get("speech_coverage") is not None:
+                st.caption(f"Your dubbed voice fills {rep['speech_coverage']:.0%} of your original speaking time.")
             avg = rep["average_similarity"]
             st.markdown(
                 f'<span class="ek-chip">Quality check: {avg}% average similarity</span>'

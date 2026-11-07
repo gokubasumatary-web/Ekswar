@@ -34,7 +34,7 @@ from .retry import FatalAPIError
 from .segment import refine_segments
 from .separate import extract_audio, prepare_for_stt, separate
 from .timing import fit_unit
-from .translate import shorten_line, translate_units
+from .translate import expand_line, shorten_line, translate_units
 from .units import make_units
 
 MAX_VIDEO_SECONDS = 180.0       # scope: videos of 3 minutes or less
@@ -87,7 +87,10 @@ def summarize(lang: str, rows: list[dict], seconds: float, calls: dict) -> dict:
         "language_name": SUPPORTED_TARGETS[lang],
         "total_units": len(rows),
         **count,
-        "slowed": sum((r.get("tempo") or 1.0) < 1.0 for r in rows),  # short lines stretched (<= 0.9x)
+        "slowed": sum((r.get("tempo") or 1.0) < 1.0 for r in rows),  # short lines stretched (>= 0.85x)
+        "expanded": sum(bool(r.get("expanded")) for r in rows),     # too-short lines made fuller
+        "speech_coverage": round(sum(r.get("final_duration") or 0 for r in rows) /
+                                 max(sum(r.get("slot") or 0 for r in rows), 0.001), 3),
         "qa_flags": sum(bool(r.get("qa_flag")) for r in rows),
         "qa_not_checked": sum(r.get("qa_similarity") is None and r["status"] != "failed" for r in rows),
         "qa_threshold": QA_THRESHOLD,
@@ -170,6 +173,7 @@ def run(video: str | Path, langs: list[str], ref: str | Path, *, gnani, llm,
                     synthesize=lambda text, uid=u.id: gnani.synthesize_cloned(text, emb, what=f"TTS unit {uid} {lang}"),
                     measure=duration_of_bytes,
                     shorten=lambda text, want, src=u.text: shorten_line(llm, lang, src, text, want, names),
+                    expand=lambda text, want, src=u.text: expand_line(llm, lang, src, text, want, names),
                     speed_up=change_tempo, pad=pad_to, log=log)
             except FatalAPIError:
                 raise
@@ -180,7 +184,8 @@ def run(video: str | Path, langs: list[str], ref: str | Path, *, gnani, llm,
                 continue
             (ldir / f"unit_{u.id}.wav").write_bytes(r.audio)
             row.update(status=r.status, final_text=r.text, budget=r.budget, spoken=r.raw_duration,
-                       tempo=r.tempo, final_duration=r.final_duration, rewrites=r.rewrites, note=r.note)
+                       tempo=r.tempo, final_duration=r.final_duration, rewrites=r.rewrites, note=r.note,
+                       expanded=r.expanded)
             rows.append(row)
             placed.append(Placed(u.id, u.start, r.audio, r.final_duration, r.text))
 

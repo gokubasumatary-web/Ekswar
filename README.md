@@ -20,7 +20,8 @@ Every dubbed line is spoken, **measured**, and adjusted until it fits the time t
 ```
 budget = original slot + half of the pause after it
 
-fits, but much shorter than the original  → slow down slightly (never below 0.9×)
+fits, but < 75 % of the original time     → ask Gemini once for a fuller, natural line (same meaning, no new facts); keep it only if it still fits
+fits, but much shorter than the original  → slow down slightly (never below 0.85×)
 fits                                      → keep it, pad with silence
 up to 15 % too long                       → speed up (pitch unchanged)
 more than 15 % too long                   → Gemini rewrites it shorter → speak again → re-check (up to 3×)
@@ -63,11 +64,13 @@ flowchart LR
 
 117 s Hindi video of a team member (their own voice and face), soft background music, dubbed into all three languages:
 
-| Language | Lines | Fit (slowed) | Sped up | Rewritten | Flagged | Failed | Quality check avg. |
-|---|---|---|---|---|---|---|---|
-| Tamil | 21 | 18 (18) | 2 | 1 | 0 | 0 | 96.3 % |
-| Bengali | 21 | 21 (19) | 0 | 0 | 0 | 0 | 93.4 % |
-| Marathi | 21 | 21 (19) | 0 | 0 | 0 | 0 | 96.9 % |
+| Language | Lines | Fit | Fuller line | Slowed | Sped up | Rewritten | Failed | Voice fills original speaking time | Quality check avg. |
+|---|---|---|---|---|---|---|---|---|---|
+| Tamil | 21 | 18 | 10 | 15 | 2 | 1 | 0 | **90 %** | 97.7 % |
+| Bengali | 21 | 21 | 15 | 18 | 0 | 0 | 0 | **89 %** | 95.1 % |
+| Marathi | 21 | 21 | 14 | 16 | 0 | 0 | 0 | **92 %** | 98.3 % |
+
+Before the "fuller line" step and the 0.85× limit, the voice filled only 69–78 % of the original speaking time.
 
 "Quality check" = Gnani's own speech recognition listened to every dubbed line and compared it with the intended text. It measures **intelligibility**, not native-speaker quality.
 
@@ -75,7 +78,8 @@ flowchart LR
 
 - **No lip-sync.** Ekswar matches *when* the voice speaks, not *how the lips move*. The mouth in the video is unchanged.
 - **Translations have not been checked by native Tamil/Bengali speakers.** Marathi reads naturally to us.
-- **Cloned voice quality** was judged "okay" by the team in all three languages; it speaks faster than the original speaker, so the voice fills about 70–78 % of the original speaking time.
+- **Cloned voice quality** was judged "okay" by the team in all three languages. It speaks faster than the original speaker; with fuller lines and slight slow-down the voice now fills about 89–92 % of the original speaking time, but small silences remain.
+- **Fuller lines** are rephrased by an LLM to fill time. They keep the meaning, but are slightly wordier than a strict translation.
 - **Scope:** Hindi source only, one speaker, videos up to 3 minutes. Other directions (e.g. Tamil → Hindi) are future work.
 - **Free-tier limits:** Gemini daily/per-minute quotas and occasional Gnani 504s are handled (backup models, retries, "not checked" marks), but can slow a run.
 - Every output is labelled **AI-dubbed**. Clone only your own voice or a voice you have permission to use.

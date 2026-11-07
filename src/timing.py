@@ -34,7 +34,14 @@ SHORTEN_MARGIN = 0.95  # aim slightly under the budget when asking for a shorter
 # speaker's mouth still moves. If a fitting clip is shorter than FILL_IF x slot, slow it
 # down toward the slot, but never below MIN_SLOWDOWN (still sounds natural).
 FILL_IF = 0.9
-MIN_SLOWDOWN = 0.9
+MIN_SLOWDOWN = 0.85   # was 0.9; lowered 2026-11-08 (team: lips still moving after the voice stops)
+
+# Expand very short lines (added 2026-11-08): if a fitting clip fills less than EXPAND_IF of the
+# original speaking time, ask the LLM ONCE for a fuller, natural version (same meaning, no new
+# facts), aiming at ~FILL_TARGET of the slot. Kept only if it still fits the budget.
+EXPAND_IF = 0.75
+FILL_TARGET = 0.92
+MAX_EXPAND = 1.5      # never ask for more than 1.5x the characters
 
 
 # --------------------------------------------------------------------------
@@ -72,6 +79,16 @@ def fill_tempo(duration: float, slot: float) -> float:
     return round(max(duration / slot, MIN_SLOWDOWN), 4)
 
 
+def wants_expansion(duration: float, slot: float) -> bool:
+    return slot > 0 and duration < slot * EXPAND_IF
+
+
+def expand_target_chars(current_chars: int, duration: float, slot: float) -> int:
+    """Characters to ask for so the line fills about FILL_TARGET of the slot (capped at MAX_EXPAND x)."""
+    want = int(current_chars * (slot * FILL_TARGET) / max(duration, 0.1))
+    return max(min(want, int(current_chars * MAX_EXPAND)), current_chars + 1)
+
+
 def target_chars(current_chars: int, duration: float, budget: float) -> int:
     """How many characters to ask for so the spoken line should fit (assumes speed stays constant)."""
     return max(int(current_chars * (budget / duration) * SHORTEN_MARGIN), 5)
@@ -101,6 +118,7 @@ class TimingResult:
     attempts: list[Attempt] = field(default_factory=list)
     audio: bytes | None = None     # final WAV (padded to the budget when it fits)
     note: str = ""
+    expanded: bool = False         # a fuller version replaced a too-short line
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -119,6 +137,7 @@ def fit_unit(
     shorten: Callable[[str, int], str],
     speed_up: Callable[[bytes, float], bytes],
     pad: Callable[[bytes, float], bytes],
+    expand: Callable[[str, int], str] | None = None,
     log: Callable[[str], None] = print,
 ) -> TimingResult:
     """Run the timing ladder for one unit. Exceptions from `synthesize` propagate
@@ -141,8 +160,27 @@ def fit_unit(
         d = decide(cur.duration, budget, rewrites if can_rewrite else MAX_REWRITES)
         if d.action == "fit":
             status = "rewritten" if rewrites else "fit"
-            return _finish(unit_id, status, cur, clips[-1], budget, fill_tempo(cur.duration, slot), rewrites,
-                           attempts, pad, measure, note, speed_up)
+            chosen, chosen_clip, expanded = cur, clips[-1], False
+            if expand is not None and rewrites == 0 and wants_expansion(cur.duration, slot):
+                want = expand_target_chars(cur.chars, cur.duration, slot)
+                log(f"  unit {unit_id}: {cur.duration:.2f}s fills only {cur.duration / slot:.0%} of the "
+                    f"{slot:.2f}s slot, asking for a fuller line (~{want} chars)")
+                try:
+                    fuller = expand(cur.text, want).strip()
+                except Exception as e:  # LLM trouble: keep the short line, still slow it down
+                    fuller, note = "", f"expand failed: {str(e)[:120]}"
+                if fuller and fuller != cur.text and len(fuller) > cur.chars:
+                    speak(fuller)
+                    new = attempts[-1]
+                    if cur.duration < new.duration <= budget:
+                        chosen, chosen_clip, expanded = new, clips[-1], True
+                    else:
+                        note = (f"fuller version {new.duration:.2f}s did not fit (budget {budget:.2f}s); "
+                                f"kept the original")
+            r = _finish(unit_id, status, chosen, chosen_clip, budget, fill_tempo(chosen.duration, slot),
+                        rewrites, attempts, pad, measure, note, speed_up)
+            r.expanded = expanded
+            return r
         if d.action == "speed" and rewrites == 0:
             return _finish(unit_id, "sped_up", cur, clips[-1], budget, d.tempo, 0, attempts, pad, measure,
                            note, speed_up)

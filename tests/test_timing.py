@@ -71,9 +71,10 @@ class FakeWorld:
     def pad(self, clip, seconds):
         return self.enc(max(self.measure(clip), seconds))
 
-    def run(self, text, slot, gap=0.0):
+    def run(self, text, slot, gap=0.0, expand=None):
         return fit_unit(0, text, slot, gap, synthesize=self.synthesize, measure=self.measure,
-                        shorten=self.shorten, speed_up=self.speed_up, pad=self.pad, log=lambda m: None)
+                        shorten=self.shorten, speed_up=self.speed_up, pad=self.pad, expand=expand,
+                        log=lambda m: None)
 
 
 def test_fit_pads_to_budget():
@@ -86,22 +87,62 @@ def test_fit_pads_to_budget():
 
 def test_short_line_is_slowed_a_little_to_fill_the_slot():
     w = FakeWorld()
-    r = w.run("x" * 60, slot=10.0)                 # 6 s in a 10 s slot -> slow, but max 0.9x
-    assert r.status == "fit" and r.tempo == 0.9
-    assert r.final_duration == pytest.approx(6.0 / 0.9, abs=0.001)   # durations are rounded to ms
-    r2 = FakeWorld().run("x" * 85, slot=10.0)      # 8.5 s: would need 0.85x, floor is 0.9x
-    assert r2.tempo == 0.9 and r2.final_duration == pytest.approx(8.5 / 0.9, abs=0.001)
+    r = w.run("x" * 60, slot=10.0)                 # 6 s in a 10 s slot -> slow, but max 0.85x
+    assert r.status == "fit" and r.tempo == 0.85
+    assert r.final_duration == pytest.approx(6.0 / 0.85, abs=0.001)  # durations are rounded to ms
+    r2 = FakeWorld().run("x" * 87, slot=10.0)      # 8.7 s: 0.87x is enough (above the 0.85 floor)
+    assert r2.tempo == 0.87 and r2.final_duration == pytest.approx(10.0, abs=0.001)
 
 
 @pytest.mark.parametrize("duration,slot,expected", [
     (9.0, 10.0, 1.0),      # 90% of slot: leave it
-    (8.95, 10.0, 0.9),     # just under: slow (floor 0.9)
+    (8.95, 10.0, 0.895),   # just under: stretch exactly to the slot
+    (5.0, 10.0, 0.85),     # far too short: floor 0.85
     (9.5, 10.0, 1.0),
     (3.0, 0.0, 1.0),       # no slot info: leave it
 ])
 def test_fill_tempo(duration, slot, expected):
     from src.timing import fill_tempo
     assert fill_tempo(duration, slot) == expected
+
+
+# ---------------------------------------------------------- expansion ----
+
+def test_too_short_line_gets_a_fuller_version():
+    w, asked = FakeWorld(), []
+    def expand(text, want):
+        asked.append(want)
+        return "y" * 85                             # 8.5 s fuller line
+    r = w.run("x" * 50, slot=10.0, expand=expand)   # 5 s = 50 % of the slot (< 75 %)
+    assert r.expanded and r.text == "y" * 85 and r.status == "fit"
+    assert asked == [75]                            # min(50*9.2/5=92, 50*1.5=75)
+    assert r.tempo == 0.85 and r.final_duration == pytest.approx(8.5 / 0.85, abs=0.001)
+
+
+def test_fuller_version_that_does_not_fit_is_dropped():
+    w = FakeWorld()
+    r = w.run("x" * 50, slot=10.0, expand=lambda t, n: "y" * 130)   # 13 s > 10 s budget
+    assert not r.expanded and r.text == "x" * 50 and "did not fit" in r.note
+    assert r.tempo == 0.85                          # original still slowed a little
+
+
+def test_expand_failure_keeps_the_original():
+    def boom(t, n):
+        raise RuntimeError("quota")
+    r = FakeWorld().run("x" * 50, slot=10.0, expand=boom)
+    assert not r.expanded and "expand failed" in r.note and r.text == "x" * 50
+
+
+def test_no_expansion_when_line_already_fills_most_of_the_slot():
+    calls = []
+    FakeWorld().run("x" * 80, slot=10.0, expand=lambda t, n: calls.append(1) or "y" * 90)  # 80 % >= 75 %
+    assert calls == []
+
+
+def test_expand_target_is_capped():
+    from src.timing import expand_target_chars
+    assert expand_target_chars(100, 2.0, 10.0) == 150          # would be 460: capped at 1.5x
+    assert expand_target_chars(100, 7.0, 10.0) == 131          # 100*9.2/7
 
 
 def test_gap_gives_extra_room():

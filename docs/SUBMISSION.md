@@ -21,7 +21,7 @@ It runs as a web page (Streamlit) and as a command-line tool.
 
 After each translated line is spoken in the cloned voice, Ekswar **measures it** and picks the gentlest fix that makes it fit:
 
-1. fits → keep it (and slow it down slightly, never below 0.9×, if it's much shorter than the original);
+1. fits → keep it. If it fills less than 75 % of the original time, ask the LLM once for a **fuller, natural** line (same meaning, no new facts), kept only if it still fits; then slow it slightly (never below 0.85×) if it's still short;
 2. up to 15 % too long → speed it up without changing pitch;
 3. more than 15 % too long → **ask the LLM to rewrite the line shorter**, speak it again, re-check (up to three times);
 4. still too long → speed up to 1.25× on the shortest version, otherwise **flag it** for a human. Speech is never cut.
@@ -43,7 +43,7 @@ Non-Gnani tools: Google Gemini (punctuation, translation, shortening), Demucs (v
 
 ## 5. Results
 
-On our own 117-second Hindi test video, in all three languages (63 dubbed lines): **0 failed, 0 flagged**. Gnani's speech recognition matched the intended text with **93–97 % average similarity**. The timing agent slowed 56 lines slightly, sped up 2 and rewrote 1 (Tamil).
+On our own 117-second Hindi test video, in all three languages (63 dubbed lines): **0 failed, 0 flagged**. Gnani's speech recognition matched the intended text with **95–98 % average similarity**. The timing agent made 39 lines fuller, slowed 49 slightly, sped up 2 and rewrote 1 (Tamil). The dubbed voice now fills **89–92 %** of the original speaking time (it was 69–78 % before the fuller-line step), so the voice starts and stops much closer to the speaker's mouth movements.
 
 ## 6. Engineering that made it reliable
 
