@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-from src.audio import AudioError, change_tempo, duration_of_bytes, pad_to
+from src.audio import AudioError, change_tempo, duration_of_bytes, pad_to, speech_for_stt
 
 pytestmark = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not on PATH")
 
@@ -30,6 +30,16 @@ def test_tempo_out_of_range_rejected(tone):
 
 def test_pad_extends_with_silence(tone):
     assert duration_of_bytes(pad_to(tone, 6.0)) == pytest.approx(6.0, abs=0.01)
+
+
+def test_speech_for_stt_drops_padding_and_downsamples(tone):
+    import io
+    import soundfile as sf
+    padded = pad_to(tone, 9.0)                       # 4 s of sound + 5 s of silence
+    out = speech_for_stt(padded, 4.0)
+    info = sf.info(io.BytesIO(out))
+    assert (info.samplerate, info.channels) == (16000, 1)
+    assert info.duration == pytest.approx(4.05, abs=0.02)
 
 
 def test_pad_never_cuts(tone):

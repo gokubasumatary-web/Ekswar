@@ -141,6 +141,18 @@ def test_not_safe_to_repeat_still_retries_429():
     assert log == [429, 200]
 
 
+def test_html_error_pages_are_not_dumped_into_logs():
+    messages = []
+
+    def send():
+        return SimpleNamespace(status_code=504, text="<!DOCTYPE html>\n<html>...lots of markup...</html>")
+
+    with pytest.raises(RequestError) as e:
+        call_with_retry(send, what="QA", sleep=no_sleep, max_attempts=2, on_retry=messages.append)
+    assert "HTML error page" in messages[0] and "<html" not in messages[0]
+    assert "<html" not in str(e.value)
+
+
 def test_network_error_is_retried():
     send, log = fake_sender([ConnectionError("dropped"), 200])
     assert call_with_retry(send, what="t", sleep=no_sleep).status_code == 200

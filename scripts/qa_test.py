@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 
-from src.audio import duration_of_bytes
+from src.audio import speech_for_stt
 from src.config import OUTPUT_DIR
 from src.gnani import GnaniClient
 from src.qa import QA_THRESHOLD, check_clip
@@ -31,7 +31,8 @@ def main() -> None:
             if r["status"] == "failed":
                 continue
             audio = (d / f"unit_{r['unit_id']}.wav").read_bytes()
-            results.append(check_clip(stt, r["unit_id"], lang, audio, r["text"], duration_of_bytes(audio)))
+            speech = speech_for_stt(audio, r["final_duration"])  # no padding silence
+            results.append(check_clip(stt, r["unit_id"], lang, speech, r["text"], r["final_duration"]))
         (d / "qa.json").write_text(json.dumps([q.to_dict() for q in results], ensure_ascii=False, indent=2),
                                    encoding="utf-8")
         print(f"\n=== {lang} ===")

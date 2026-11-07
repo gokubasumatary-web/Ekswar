@@ -768,6 +768,7 @@ Supporting deliverables: README (how to run, models, contributions, honest limit
 | ffmpeg installed | ✅ Done | 9.0.2 via winget (visible in new terminals) |
 | Gnani API key in `.env` | ✅ Valid | 2026-11-06: `GET /stt/v3/batch/jobs` → HTTP 200 (free, read-only). TTS / voice-clone scope confirmed at the first Stage 1 call. **Key was pasted in chat → regenerate it before submission.** |
 | Gemini API key + model in `.env` | ✅ Valid | `GEMINI_MODEL=gemini-3.6-flash`, `GEMINI_FALLBACK_MODEL=gemini-3.5-flash` (3.8 was overloaded). **Key was pasted in chat → regenerate before submission.** |
+| **Stage 10: Pipeline + CLI** | ✅ Done | `python cli.py --video ... --lang ta-IN,bn-IN,mr-IN --ref ...`. See docs/stages/STAGE_10_pipeline_cli.md |
 | **Stage 9: Mix + video + subtitles** | ✅ Done | First dubbed videos in `outputs/final/` (ta/bn/mr). See docs/stages/STAGE_09_mix_video.md |
 | **Stage 8: Quality check** | ✅ Done | Prisma REST QA: 93.7–98.3 % on 6 clips; threshold 80 %. See docs/stages/STAGE_08_quality_check.md |
 | **Stage 7: Timing agent** | ✅ Done | Ladder works with real APIs (fit / sped_up / rewritten verified). See docs/stages/STAGE_07_timing_agent.md |
