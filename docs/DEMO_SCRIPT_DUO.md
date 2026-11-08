@@ -52,4 +52,4 @@
 - Rehearse once together. Speak slowly. Keep each clip short.
 - If one of you is camera-shy, record the voice over the screen only.
 - Make sure the **rewritten** row is on screen (in Tamil). It's the clearest proof the timing agent works.
-- Post with **#GnaniAI** and **#GreatIndianAIInternshipChallenge**, tag Gnani's official page, and tag each other (see [LINKEDIN_POST.md](LINKEDIN_POST.md)).
+- Post with **#GnaniAI** and **#GreatIndianAIInternshipChallenge**, tag Gnani's official page, and tag each other (drafts in your local `docs/LINKEDIN_POST.md`).

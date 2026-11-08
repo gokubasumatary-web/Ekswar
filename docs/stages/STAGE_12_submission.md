@@ -10,7 +10,7 @@
 | [README.md](../../README.md) | Judges, developers | What/why, timing agent, **architecture diagram (Mermaid, renders on GitHub)**, tools table, real results, honest limits, how to run, layout, team, future work |
 | [docs/SUBMISSION.md](../SUBMISSION.md) | Competition form | Problem, solution, timing agent, **each Gnani model and what it does**, results, engineering, limits, contributions, links |
 | [docs/DEMO_SCRIPT.md](../DEMO_SCRIPT.md) | The team | 2–3 min scene-by-scene script with what to say and what to show |
-| [docs/LINKEDIN_POST.md](../LINKEDIN_POST.md) | Public | LinkedIn and X drafts with the required hashtags |
+| `docs/LINKEDIN_POST.md` (local only, not on GitHub) | The team | LinkedIn and X drafts with the required hashtags |
 | [HANDOFF.md](../../HANDOFF.md) | Ananya | One-page project guide |
 
 All numbers come from the real 2-minute run (`outputs/runs/ekswar_demo/report.json`). Nothing unmeasured is claimed (e.g. Gnani credits per video are "not measured").

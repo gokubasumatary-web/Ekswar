@@ -24,3 +24,6 @@ samples/
 .idea/
 Thumbs.db
 .DS_Store
+
+# Private post drafts (kept local)
+docs/LINKEDIN_POST.md
