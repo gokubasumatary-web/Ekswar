@@ -144,8 +144,17 @@ def main() -> None:
         langs = st.pills("**3 · Languages**", list(SUPPORTED_TARGETS), selection_mode="multi",
                          default=["ta-IN"], format_func=lambda c: SUPPORTED_TARGETS[c]) or []
         o1, o2 = st.columns([3, 1], vertical_alignment="bottom")
-        names = o1.text_input("Names to keep (optional, comma-separated)",
-                              placeholder="गुथल बसुमतारी (Guthal Basumatary)")
+        names = o1.text_input(
+            "Names in your video (optional)",
+            placeholder="e.g. गुथल बसुमतारी (Guthal Basumatary), पूजा (Pooja)",
+            help=("Names of people, places or brands that are spoken in the video. Ekswar keeps them as "
+                  "names: it does not translate their meaning (e.g. 'Pooja' stays Pooja, not 'worship') and "
+                  "spells them correctly in Tamil, Bengali or Marathi, even if the speech recognition misheard "
+                  "them. Several names: separate them with commas. Tip: write the name in Hindi with the "
+                  "English spelling in brackets. Leave empty if there are no names."))
+        o1.caption("Type the names spoken in your video so they are **not translated** and are **spelled "
+                   "correctly**. Several names → separate with commas ( , ). No names → leave it empty. "
+                   "The grey text is only an example.")
         no_music = o2.toggle("No background music", help="Skip music separation (faster)")
         consent = st.checkbox("This is my voice, or I have permission to clone it.")
 
