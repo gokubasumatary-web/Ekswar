@@ -15,7 +15,9 @@ Also: Google Gemini (translation, rewriting), Demucs (voice/music separation), f
 
 **Results (our own 2-minute video, 3 languages, 63 lines):** 0 failed, 0 flagged. Gnani's recognition matched the intended text at **95–98 %**. The cloned voice fills **89–92 %** of the original speaking time.
 
-**Honest limits.** No lip-sync (timing only); translations not yet reviewed by native speakers; Hindi source, one speaker, ≤ 3 minutes.
+**Honest limits.** No lip-sync (timing only); translations not yet reviewed by native speakers; Hindi source only, 3 target languages, one speaker, ≤ 3 minutes. It cannot yet dub regional languages into Hindi or English.
+
+**Next.** More Indian languages (Telugu, Kannada, Malayalam, Gujarati, Punjabi, English); any direction, including regional → Hindi/English; several speakers; optional lip-sync.
 
 **Reliability.** Every API result is cached (re-runs cost no credits); a failed line never stops a run; 173 automated tests.
 

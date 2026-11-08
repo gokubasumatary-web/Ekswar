@@ -141,7 +141,12 @@ Development was assisted by **Claude Code** (an AI coding assistant).
 
 ## Future work
 
-- Any direction between Indian languages (the models already support all 10).
-- Optional lip-sync as an experimental step.
-- Edit a single line on the web page and re-render only that line.
-- Native-speaker review loop.
+**Today:** Hindi in, Tamil/Bengali/Marathi out, one speaker, up to 3 minutes, timing sync only. Ekswar **cannot** yet dub a regional-language video into Hindi or English.
+
+- **Lip-sync:** an optional, experimental step that redraws the mouth (needs a GPU).
+- **More languages:** add Telugu, Kannada, Malayalam, Gujarati, Punjabi and English (Gnani's voice models list all 10).
+- **Any direction:** regional → Hindi/English (e.g. Tamil → Hindi, Bengali → English) and between any two Indian languages.
+- **Several speakers**, each in their own cloned voice. **Longer videos** (over 3 minutes).
+- **Native-speaker review:** edit one line on the web page and re-render only that line.
+
+Full plan: [docs/FUTURE_PLAN.md](docs/FUTURE_PLAN.md).
