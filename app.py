@@ -78,6 +78,15 @@ def can_run(video, ref, langs, consent) -> tuple[bool, str]:
     return True, ""
 
 
+NATIVE_NAMES = {"ta-IN": "தமிழ்", "bn-IN": "বাংলা", "mr-IN": "मराठी"}
+
+
+def video_head(native: str, english: str, chip: str, chip_class: str) -> str:
+    """Centred title above a video: native-script name, English name, and a small tag."""
+    return (f'<div class="ek-vhead"><span class="ek-vname">{native}</span>'
+            f'<span class="ek-ven">{english}</span><span class="ek-vchip {chip_class}">{chip}</span></div>')
+
+
 def show_results(res) -> None:
     st.markdown('<div class="ek-label">Your dubs</div>', unsafe_allow_html=True)
     langs = list(res["langs"].items())
@@ -88,18 +97,21 @@ def show_results(res) -> None:
             with st.container(border=True, key=f"ek-card-{lang}"):
                 c1, c2 = st.columns(2, gap="large")
                 with c1:
-                    st.markdown('<div class="ek-label">Original · Hindi</div>', unsafe_allow_html=True)
+                    st.markdown(video_head("हिन्दी", "Hindi", "Original", "ek-chip-orig"), unsafe_allow_html=True)
                     st.video(res["video"])
                 with c2:
-                    st.markdown(f'<div class="ek-label">AI-dubbed · {rep["language_name"]}</div>',
-                                unsafe_allow_html=True)
+                    name = rep["language_name"]
+                    st.markdown(video_head(NATIVE_NAMES.get(lang, name), name, "AI dub · your voice",
+                                           "ek-chip-ai"), unsafe_allow_html=True)
                     st.video(lr["mp4"])
-                d1, d2, _ = st.columns([1, 1, 2])
-                d1.download_button("Download MP4", Path(lr["mp4"]).read_bytes(), file_name=Path(lr["mp4"]).name,
-                                   mime="video/mp4", key=f"mp4-{lang}", width="stretch")
-                d2.download_button("Download subtitles", Path(lr["srt"]).read_bytes(),
-                                   file_name=Path(lr["srt"]).name, mime="text/plain", key=f"srt-{lang}",
-                                   width="stretch")
+                    with st.container(key=f"ek-dl-{lang}"):
+                        d1, d2 = st.columns(2)
+                        d1.download_button("Download MP4", Path(lr["mp4"]).read_bytes(),
+                                           file_name=Path(lr["mp4"]).name, mime="video/mp4",
+                                           key=f"mp4-{lang}", width="stretch")
+                        d2.download_button("Download subtitles", Path(lr["srt"]).read_bytes(),
+                                           file_name=Path(lr["srt"]).name, mime="text/plain",
+                                           key=f"srt-{lang}", width="stretch")
 
             st.markdown('<div class="ek-label" style="margin-top:1.4rem">What the timing agent did</div>',
                         unsafe_allow_html=True)

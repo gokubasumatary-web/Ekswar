@@ -205,6 +205,18 @@ html, body, [class*="css"], .stMarkdown, p, label, input, textarea, button {
   border-radius: 999px; padding: .28rem .75rem; margin: 0 .35rem .35rem 0; }
 .ek-foot { color: var(--muted); font-size: .84rem; text-align: center; margin-top: 3.2rem; }
 video { border-radius: 16px; }
+
+/* title centred above each result video */
+.ek-vhead { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: .5rem;
+  margin: .2rem 0 .8rem 0; text-align: center; }
+.ek-vname { font-size: 1.5rem; font-weight: 700; color: var(--ink, inherit); line-height: 1.2; }
+.ek-ven { font-size: .95rem; font-weight: 600; color: var(--muted); }
+.ek-vchip { font-size: .72rem; font-weight: 700; letter-spacing: .04em; padding: .2rem .6rem;
+  border-radius: 999px; align-self: center; white-space: nowrap; }
+.ek-chip-orig { background: rgba(127,127,127,.14); color: var(--muted); }
+.ek-chip-ai { background: linear-gradient(90deg, var(--saffron), var(--accent)); color: #fff; }
+/* download buttons sit under the dubbed video, as wide as it */
+[class*="st-key-ek-dl"] { max-width: 420px; margin: .8rem auto 0 auto; }
 </style>
 """
 
