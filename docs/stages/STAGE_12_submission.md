@@ -10,6 +10,9 @@
 | [README.md](../../README.md) | Judges, developers | What/why, timing agent, **architecture diagram (Mermaid, renders on GitHub)**, tools table, real results, honest limits, how to run, layout, team, future work |
 | [docs/SUBMISSION.md](../SUBMISSION.md) | Competition form | Problem, solution, timing agent, **each Gnani model and what it does**, results, engineering, limits, contributions, links |
 | [docs/DEMO_SCRIPT.md](../DEMO_SCRIPT.md) | The team | 2–3 min scene-by-scene script with what to say and what to show |
+| [docs/DEMO_SCRIPT_DUO.md](../DEMO_SCRIPT_DUO.md) | The team | Same demo as a two-person dialogue (~3 min), incl. a "what's next" part |
+| [docs/FUTURE_PLAN.md](../FUTURE_PLAN.md) | Judges | What Ekswar does today vs. the plan: lip-sync, more languages, regional → Hindi/English, several speakers |
+| [PITCH.md](../../PITCH.md) | Competition form | One-page solution pitch |
 | `docs/LINKEDIN_POST.md` (local only, not on GitHub) | The team | LinkedIn and X drafts with the required hashtags |
 | [HANDOFF.md](../../HANDOFF.md) | Ananya | One-page project guide |
 

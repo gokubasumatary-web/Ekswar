@@ -1,6 +1,6 @@
 # HANDOFF.md: Ekswar in one page (for Ananya)
 
-> Last updated: 2026-11-07 · Branch: **`feature`** · Deadline: **Nov 10, 2026, 11:59 PM IST**
+> Last updated: 2026-11-10 · Branch: **`feature`** · Deadline: **Nov 10, 2026, 11:59 PM IST**
 
 ## What Ekswar is
 
@@ -15,9 +15,9 @@ A short **Hindi video** (≤ 3 min, one speaker) goes in. The same video comes o
 | | |
 |---|---|
 | ✅ Stages 0–11 done | Pipeline, CLI, Streamlit page (with design + animations) |
-| ⬜ Stage 12 left | README, written explanation, architecture diagram, demo video, LinkedIn post, submission |
-| Tests | **164 / 164 pass** (`.venv\Scripts\python -m pytest -q`) |
-| Real results | 2-min demo in 3 languages: 63 lines, 0 failed, QA 93–97 % |
+| 🔄 Stage 12 | Docs done (README, SUBMISSION, PITCH, FUTURE_PLAN, demo scripts). Left: team contributions, demo video, LinkedIn post, submission form |
+| Tests | **173 / 173 pass** (`.venv\Scripts\python -m pytest -q`) |
+| Real results | 2-min demo in 3 languages: 63 lines, 0 failed, QA 95–98 %, voice fills 89–92 % of speaking time |
 
 ## Models used
 
@@ -75,7 +75,7 @@ Outputs go to `outputs/runs/<video>/` (MP4 and SRT per language, plus `report.js
 
 ## Known limits / open items
 
-- **No lip-sync** (out of scope). The voice fills ~70–78 % of the original speaking time.
+- **No lip-sync** (out of scope). The voice fills ~89–92 % of the original speaking time. Next steps: [docs/FUTURE_PLAN.md](docs/FUTURE_PLAN.md).
 - **Gemini free tier** runs out after heavy use (per-minute and per-day limits). Ekswar switches models automatically; worst case, wait for the daily reset.
 - **Gnani REST** sometimes returns 504; those lines are marked "not checked" and retried on re-run.
 - **Before submission:** regenerate both API keys (they were shared in a chat), and get a native Tamil/Bengali speaker to check a few lines if possible.
