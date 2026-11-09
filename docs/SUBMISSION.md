@@ -50,15 +50,19 @@ On our own 117-second Hindi test video, in all three languages (63 dubbed lines)
 - **Every API result is cached** by a hash of its inputs, so re-runs cost no credits. A crash while waiting for a batch job resumes the same job instead of paying for a new one.
 - **Failures are contained:** a failed line is marked and the run continues; key/credit errors stop it immediately; HTTP 504s become "not checked", never "passed".
 - **Gemini free-tier handling:** backup model chain; per-minute vs per-day quota detected from Google's own error details; answers in the wrong script are never cached and are retried on another model.
-- **164 automated tests**, including the whole pipeline with fake Gnani/Gemini clients.
+- **173 automated tests**, including the whole pipeline with fake Gnani/Gemini clients.
 - Every place the real APIs differed from their docs is recorded in `NOTES.md`.
 
 ## 7. Honest limits
 
 - **No lip-sync**: timing sync only; the lips in the video don't change.
 - Translations **not yet reviewed by native speakers**; QA measures intelligibility, not fluency.
-- Hindi source only; one speaker; up to 3 minutes.
+- Hindi source only, 3 target languages (Tamil, Bengali, Marathi); it cannot yet dub regional languages into Hindi or English. One speaker; up to 3 minutes.
 - The cloned voice speaks faster than the original speaker, so some silence remains inside lines.
+
+## Future plan
+
+Optional lip-sync (GPU); more Indian languages (Telugu, Kannada, Malayalam, Gujarati, Punjabi, English); any direction, including regional → Hindi/English; several speakers; longer videos; native-speaker review with one-line re-rendering. Details: [docs/FUTURE_PLAN.md](FUTURE_PLAN.md).
 
 ## 8. Team contributions
 
