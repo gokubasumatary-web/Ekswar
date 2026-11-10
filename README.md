@@ -132,10 +132,7 @@ Design choices that matter: **every API result is cached** (re-runs cost no cred
 
 ## Team
 
-| Member | Contribution |
-|---|---|
-| Guthal Basumatary | *[to be filled in by the team]* |
-| Ananya | *[to be filled in by the team]* |
+**Guthal Basumatary** and **Ananya** contributed **equally** to Ekswar. They worked together on the idea, the design, building and testing the pipeline and the web page, the voice tests, the demo and the documentation.
 
 Development was assisted by **Claude Code** (an AI coding assistant).
 
