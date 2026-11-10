@@ -66,7 +66,7 @@ Optional lip-sync (GPU); more Indian languages (Telugu, Kannada, Malayalam, Guja
 
 ## 8. Team contributions
 
-**Guthal Basumatary** and **Ananya** contributed **equally** to Ekswar. They worked together on the idea, the design, building and testing the pipeline and the web page, the voice tests, the demo and the documentation.
+**Guthal Basumatary** and **Ananya** contributed **equally** to Ekswar. We worked together on the idea, the design, building and testing the pipeline and the web page, the voice tests, the demo and the documentation.
 
 Development was assisted by Claude Code (AI coding assistant).
 
