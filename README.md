@@ -1,6 +1,6 @@
 # Ekswar: one voice, every Indian language
 
-> 🎬 **Demo video: [watch on Google Drive](https://drive.google.com/file/d/1txnJndllbC7L8dTefrdIKt19Qm54PIWN/view?usp=sharing)** · 💼 LinkedIn post: [read it here](https://www.linkedin.com/posts/guthal-basumatary_ekswar-gnaniai-generativeai-ugcPost-7525902466068979712-8FaL/) · 📄 1-page solution pitch: [PITCH.md](PITCH.md) · 📝 Full write-up: [docs/SUBMISSION.md](docs/SUBMISSION.md)
+> 🎬 **Demo video: [watch on Google Drive](https://drive.google.com/file/d/1txnJndllbC7L8dTefrdIKt19Qm54PIWN/view?usp=sharing)** · 💼 LinkedIn post: [read it here](https://www.linkedin.com/posts/guthal-basumatary_ekswar-gnaniai-generativeai-ugcPost-7525902466068979712-8FaL/) · 📄 1-page solution pitch: [PITCH.md](PITCH.md) · 📋 PRD: [docs/EKSWAR_PRD.pdf](docs/EKSWAR_PRD.pdf) · 📝 Full write-up: [docs/SUBMISSION.md](docs/SUBMISSION.md)
 
 Ekswar dubs a short **Hindi** video into **Tamil, Bengali or Marathi** in the **creator's own cloned voice**. Each dubbed line is timed to the moment it was originally spoken, the background music is kept, and you also get subtitles and a metrics report.
 
