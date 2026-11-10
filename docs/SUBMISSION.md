@@ -73,5 +73,6 @@ Development was assisted by Claude Code (AI coding assistant).
 ## 9. Links
 
 - Code: https://github.com/gokubasumatary-web/Ekswar
+- Product Requirements Document (PRD): [EKSWAR_PRD.pdf](EKSWAR_PRD.pdf)
 - Demo video: https://drive.google.com/file/d/1txnJndllbC7L8dTefrdIKt19Qm54PIWN/view?usp=sharing
 - LinkedIn post: https://www.linkedin.com/posts/guthal-basumatary_ekswar-gnaniai-generativeai-ugcPost-7525902466068979712-8FaL/
